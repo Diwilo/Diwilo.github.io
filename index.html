@@ -1019,17 +1019,16 @@
     <!-- ═══ HEADER ═══ -->
     <header class="site-header">
       <h1 class="site-title" id="siteTitle">墨迹<span class="dot">.</span></h1>
-      <p class="site-subtitle">文字是时间的琥珀</p>
+      <p class="site-subtitle" id="siteSubtitle">文字是时间的琥珀</p>
       <div class="ornament">✦</div>
       <nav class="site-nav">
         <a href="#" class="active" data-page="home">文章</a>
         <span class="nav-sep">·</span>
         <a href="#" data-page="archive">归档</a>
         <span class="nav-sep">·</span>
-        <a href="#" data-page="about">关于</a>
-        <span class="nav-sep">·</span>
         <button class="nav-btn search-btn" id="searchBtn" aria-label="搜索">🔍</button>
         <button class="nav-btn theme-toggle" id="themeToggle" aria-label="切换主题">☽</button>
+        <a href="admin.html" class="nav-btn" aria-label="管理" style="text-decoration:none;font-size:0.95rem;">⚙</a>
       </nav>
     </header>
 
@@ -1268,7 +1267,11 @@
       link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); });
     });
 
-    document.getElementById('siteTitle').addEventListener('click', () => showPage('home'));
+    // Title click → About page
+    document.getElementById('siteTitle').addEventListener('click', () => showPage('about'));
+    document.getElementById('siteSubtitle').addEventListener('click', () => showPage('about'));
+    document.getElementById('siteTitle').style.cursor = 'pointer';
+    document.getElementById('siteSubtitle').style.cursor = 'pointer';
 
     /* ═══════════════════════════════════════
        SEARCH
@@ -1634,6 +1637,21 @@
     /* ═══════════════════════════════════════
        INIT
        ═══════════════════════════════════════ */
+    // Load articles from localStorage (admin) or use defaults
+    function loadArticlesForFrontend() {
+      const stored = localStorage.getItem('blog-articles');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            articles.length = 0;
+            parsed.forEach(a => articles.push(a));
+          }
+        } catch(e) {}
+      }
+    }
+    loadArticlesForFrontend();
+
     renderArticleList();
     buildFilterBar();
     buildArchive();
