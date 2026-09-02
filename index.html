@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>墨迹 — 个人博客</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Noto+Serif+SC:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════
+       DESIGN TOKENS
+       ═══════════════════════════════════════ */
+    :root {
+      /* Paper palette — warm, aged */
+      --paper:        oklch(0.965 0.008 75);
+      --paper-deep:   oklch(0.935 0.012 72);
+      --ink:          oklch(0.18 0.015 55);
+      --ink-soft:     oklch(0.35 0.012 55);
+      --ink-muted:    oklch(0.52 0.01 60);
+      --accent:       oklch(0.48 0.12 25);   /* aged red — like old book spine */
+      --accent-soft:  oklch(0.55 0.08 25);
+      --gold:         oklch(0.62 0.1 80);    /* gilded detail */
+      --divider:      oklch(0.82 0.015 70);
+      --shadow:       oklch(0.15 0.01 55 / 0.08);
+
+      /* Typography */
+      --font-display: 'Playfair Display', 'Noto Serif SC', serif;
+      --font-body:    'Crimson Text', 'Noto Serif SC', serif;
+      --font-detail:  'EB Garamond', 'Noto Serif SC', serif;
+
+      /* Spacing scale */
+      --space-xs:  0.5rem;
+      --space-sm:  1rem;
+      --space-md:  1.75rem;
+      --space-lg:  3rem;
+      --space-xl:  5rem;
+      --space-2xl: 8rem;
+
+      /* Transitions */
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    [data-theme="dark"] {
+      --paper:        oklch(0.17 0.01 60);
+      --paper-deep:   oklch(0.14 0.012 60);
+      --ink:          oklch(0.88 0.01 75);
+      --ink-soft:     oklch(0.72 0.01 75);
+      --ink-muted:    oklch(0.55 0.008 70);
+      --accent:       oklch(0.65 0.12 30);
+      --accent-soft:  oklch(0.58 0.08 30);
+      --gold:         oklch(0.72 0.1 80);
+      --divider:      oklch(0.28 0.01 60);
+      --shadow:       oklch(0 0 0 / 0.2);
+    }
+
+    /* ═══════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html {
+      font-size: clamp(15px, 1.1vw, 18px);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.8;
+      min-height: 100vh;
+      transition: background 0.6s var(--ease-out-quart), color 0.6s var(--ease-out-quart);
+    }
+
+    /* Paper texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    ::selection {
+      background: oklch(0.85 0.06 75);
+      color: var(--ink);
+    }
+    [data-theme="dark"] ::selection {
+      background: oklch(0.35 0.06 75);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s var(--ease-out-quart);
+    }
+    a:hover { color: var(--accent-soft); }
+
+    img { max-width: 100%; display: block; }
+
+    /* ═══════════════════════════════════════
+       LAYOUT
+       ═══════════════════════════════════════ */
+    .site-wrapper {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 0 var(--space-md);
+    }
+
+    /* ═══════════════════════════════════════
+       HEADER — Masthead
+       ═══════════════════════════════════════ */
+    .site-header {
+      padding: var(--space-xl) 0 var(--space-lg);
+      text-align: center;
+      border-bottom: 1px solid var(--divider);
+      position: relative;
+    }
+
+    .site-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+
+    .site-title .dot {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .site-subtitle {
+      font-family: var(--font-detail);
+      font-size: 1.05rem;
+      color: var(--ink-muted);
+      margin-top: var(--space-xs);
+      font-style: italic;
+      letter-spacing: 0.08em;
+    }
+
+    /* Ornamental divider */
+    .ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: var(--space-md) 0;
+      color: var(--gold);
+      font-size: 0.85rem;
+      letter-spacing: 0.3em;
+      user-select: none;
+    }
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      max-width: 6rem;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--divider), transparent);
+    }
+
+    /* ═══════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════ */
+    .site-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      font-family: var(--font-detail);
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .site-nav a {
+      color: var(--ink-soft);
+      position: relative;
+      padding-bottom: 2px;
+    }
+    .site-nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width 0.4s var(--ease-out-quart);
+    }
+    .site-nav a:hover::after,
+    .site-nav a.active::after {
+      width: 100%;
+    }
+    .site-nav a.active {
+      color: var(--ink);
+    }
+
+    .nav-sep {
+      color: var(--divider);
+      font-weight: 300;
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--ink-muted);
+      font-size: 1.1rem;
+      padding: 0.3rem;
+      transition: color 0.3s, transform 0.3s var(--ease-out-quart);
+      line-height: 1;
+    }
+    .theme-toggle:hover {
+      color: var(--gold);
+      transform: rotate(15deg);
+    }
+
+    /* ═══════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════ */
+    .site-main {
+      padding: var(--space-lg) 0 var(--space-2xl);
+    }
+
+    /* ═══════════════════════════════════════
+       ARTICLE LIST (Index)
+       ═══════════════════════════════════════ */
+    .article-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xl);
+    }
+
+    .article-card {
+      opacity: 0;
+      transform: translateY(2rem);
+      animation: fadeUp 0.7s var(--ease-out-quart) forwards;
+    }
+    .article-card:nth-child(1) { animation-delay: 0.1s; }
+    .article-card:nth-child(2) { animation-delay: 0.25s; }
+    .article-card:nth-child(3) { animation-delay: 0.4s; }
+    .article-card:nth-child(4) { animation-delay: 0.55s; }
+    .article-card:nth-child(5) { animation-delay: 0.7s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .article-meta .sep {
+      color: var(--divider);
+    }
+
+    .article-category {
+      color: var(--accent);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .article-category:hover { color: var(--accent-soft); }
+
+    .article-card h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.01em;
+    }
+
+    .article-card h2 a {
+      color: var(--ink);
+      transition: color 0.3s var(--ease-out-quart);
+    }
+    .article-card h2 a:hover {
+      color: var(--accent);
+    }
+
+    .article-excerpt {
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      line-height: 1.85;
+      margin-bottom: 1rem;
+    }
+
+    .read-more {
+      font-family: var(--font-detail);
+      font-size: 0.88rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .read-more .arrow {
+      transition: transform 0.3s var(--ease-out-quart);
+      display: inline-block;
+    }
+    .read-more:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    /* Section divider between cards */
+    .article-card + .article-card {
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--divider);
+    }
+
+    /* ═══════════════════════════════════════
+       ARTICLE DETAIL
+       ═══════════════════════════════════════ */
+    .article-detail {
+      display: none;
+    }
+    .article-detail.visible {
+      display: block;
+      animation: fadeUp 0.6s var(--ease-out-quart) forwards;
+    }
+
+    .article-detail .back-link {
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: var(--space-lg);
+    }
+    .article-detail .back-link:hover {
+      color: var(--accent);
+    }
+
+    .article-detail header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+
+    .article-detail header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-sm);
+    }
+
+    .article-detail header .meta {
+      font-family: var(--font-detail);
+      font-size: 0.9rem;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    .article-body {
+      font-size: 1.08rem;
+      line-height: 2;
+      color: var(--ink-soft);
+    }
+
+    .article-body p {
+      margin-bottom: 1.6em;
+      text-indent: 2em;
+    }
+
+    .article-body p:first-of-type {
+      text-indent: 0;
+    }
+
+    .article-body p:first-of-type::first-letter {
+      font-family: var(--font-display);
+      font-size: 3.6em;
+      float: left;
+      line-height: 0.8;
+      margin-right: 0.08em;
+      margin-top: 0.07em;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .article-body blockquote {
+      border-left: 2px solid var(--gold);
+      padding: var(--space-sm) var(--space-md);
+      margin: var(--space-md) 0;
+      font-style: italic;
+      color: var(--ink-muted);
+      background: oklch(0.95 0.008 75 / 0.5);
+    }
+    [data-theme="dark"] .article-body blockquote {
+      background: oklch(0.2 0.01 60 / 0.5);
+    }
+
+    .article-body h2 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: var(--space-lg) 0 var(--space-sm);
+      text-indent: 0;
+    }
+
+    .article-body ul, .article-body ol {
+      padding-left: 1.5em;
+      margin-bottom: 1.6em;
+    }
+
+    .article-body li {
+      margin-bottom: 0.4em;
+    }
+
+    /* Tags */
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: var(--space-lg);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--divider);
+    }
+
+    .tag {
+      font-family: var(--font-detail);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3em 0.8em;
+      border: 1px solid var(--divider);
+      color: var(--ink-muted);
+      transition: all 0.3s var(--ease-out-quart);
+      cursor: pointer;
+    }
+    .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ═══════════════════════════════════════
+       ABOUT PAGE
+       ═══════════════════════════════════════ */
+    .about-page {
+      display: none;
+    }
+    .about-page.visible {
+      display: block;
+      animation: fadeUp 0.6s var(--ease-out-quart) forwards;
+    }
+
+    .about-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+
+    .about-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: var(--paper-deep);
+      border: 2px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      color: var(--ink-muted);
+      flex-shrink: 0;
+    }
+
+    .about-intro h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+
+    .about-intro p {
+      font-family: var(--font-detail);
+      font-size: 1.05rem;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    .about-body {
+      font-size: 1.05rem;
+      line-height: 2;
+      color: var(--ink-soft);
+    }
+
+    .about-body p {
+      margin-bottom: 1.6em;
+    }
+
+    .about-body h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: var(--space-lg) 0 var(--space-sm);
+      color: var(--ink);
+    }
+
+    .social-links {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--divider);
+    }
+
+    .social-links a {
+      font-family: var(--font-detail);
+      font-size: 0.88rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .social-links a:hover {
+      color: var(--accent);
+    }
+
+    /* ═══════════════════════════════════════
+       ARCHIVE PAGE
+       ═══════════════════════════════════════ */
+    .archive-page {
+      display: none;
+    }
+    .archive-page.visible {
+      display: block;
+      animation: fadeUp 0.6s var(--ease-out-quart) forwards;
+    }
+
+    .archive-page h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 700;
+      margin-bottom: var(--space-lg);
+      text-align: center;
+    }
+
+    .archive-year {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: var(--space-lg) 0 var(--space-sm);
+    }
+
+    .archive-item {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-sm);
+      padding: 0.6rem 0;
+      border-bottom: 1px solid oklch(0.88 0.01 70 / 0.5);
+    }
+
+    .archive-date {
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      width: 5rem;
+    }
+
+    .archive-item a {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--ink);
+      flex: 1;
+    }
+    .archive-item a:hover { color: var(--accent); }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════ */
+    .site-footer {
+      padding: var(--space-lg) 0;
+      text-align: center;
+      border-top: 1px solid var(--divider);
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .footer-quote {
+      font-style: italic;
+      margin-bottom: var(--space-xs);
+      color: var(--ink-soft);
+    }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .site-header {
+        padding: var(--space-lg) 0 var(--space-md);
+      }
+
+      .site-nav {
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+      }
+
+      .about-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .article-body p:first-of-type::first-letter {
+        font-size: 2.8em;
+      }
+
+      .social-links {
+        justify-content: center;
+      }
+    }
+
+    /* ═══════════════════════════════════════
+       PRINT STYLES
+       ═══════════════════════════════════════ */
+    @media print {
+      body::before { display: none; }
+      .site-nav, .theme-toggle { display: none; }
+      .article-body { font-size: 11pt; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="site-header">
+      <h1 class="site-title">墨迹<span class="dot">.</span></h1>
+      <p class="site-subtitle">文字是时间的琥珀</p>
+      <div class="ornament">✦</div>
+      <nav class="site-nav">
+        <a href="#" class="active" data-page="home">文章</a>
+        <span class="nav-sep">·</span>
+        <a href="#" data-page="archive">归档</a>
+        <span class="nav-sep">·</span>
+        <a href="#" data-page="about">关于</a>
+        <span class="nav-sep">·</span>
+        <button class="theme-toggle" id="themeToggle" aria-label="切换主题">☽</button>
+      </nav>
+    </header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="site-main">
+
+      <!-- HOME — Article List -->
+      <section class="page-content" id="page-home">
+        <div class="article-list">
+
+          <article class="article-card">
+            <div class="article-meta">
+              <span class="article-category">随笔</span>
+              <span class="sep">·</span>
+              <time>二〇二六年八月十七日</time>
+            </div>
+            <h2><a href="#" data-article="0">在旧书店里迷路的下午</a></h2>
+            <p class="article-excerpt">
+              书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。
+            </p>
+            <a href="#" class="read-more" data-article="0">继续阅读 <span class="arrow">→</span></a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <span class="article-category">技术</span>
+              <span class="sep">·</span>
+              <time>二〇二六年八月五日</time>
+            </div>
+            <h2><a href="#" data-article="1">写代码与写文章</a></h2>
+            <p class="article-excerpt">
+              好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。
+            </p>
+            <a href="#" class="read-more" data-article="1">继续阅读 <span class="arrow">→</span></a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <span class="article-category">旅行</span>
+              <span class="sep">·</span>
+              <time>二〇二六年七月二十日</time>
+            </div>
+            <h2><a href="#" data-article="2">雨季的京都</a></h2>
+            <p class="article-excerpt">
+              京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。
+            </p>
+            <a href="#" class="read-more" data-article="2">继续阅读 <span class="arrow">→</span></a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <span class="article-category">思考</span>
+              <span class="sep">·</span>
+              <time>二〇二六年七月八日</time>
+            </div>
+            <h2><a href="#" data-article="3">关于"慢"的实验</a></h2>
+            <p class="article-excerpt">
+              我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。
+            </p>
+            <a href="#" class="read-more" data-article="3">继续阅读 <span class="arrow">→</span></a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <span class="article-category">随笔</span>
+              <span class="sep">·</span>
+              <time>二〇二六年六月二十五日</time>
+            </div>
+            <h2><a href="#" data-article="4">深夜面馆</a></h2>
+            <p class="article-excerpt">
+              凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。
+            </p>
+            <a href="#" class="read-more" data-article="4">继续阅读 <span class="arrow">→</span></a>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ARTICLE DETAIL -->
+      <section class="article-detail" id="page-article">
+        <a href="#" class="back-link" id="backToList">← 返回文章列表</a>
+        <header>
+          <div class="article-meta" id="articleDetailMeta"></div>
+          <h1 id="articleDetailTitle"></h1>
+          <p class="meta" id="articleDetailDate"></p>
+        </header>
+        <div class="article-body" id="articleDetailBody"></div>
+        <div class="article-tags" id="articleDetailTags"></div>
+      </section>
+
+      <!-- ARCHIVE -->
+      <section class="archive-page" id="page-archive">
+        <h1>归档</h1>
+        <div id="archiveContent"></div>
+      </section>
+
+      <!-- ABOUT -->
+      <section class="about-page" id="page-about">
+        <div class="about-header">
+          <div class="about-avatar">墨</div>
+          <div class="about-intro">
+            <h1>你好，我是墨迹</h1>
+            <p>一个用代码写字、用文字思考的人</p>
+          </div>
+        </div>
+        <div class="about-body">
+          <p>
+            我相信文字是时间的琥珀。那些值得记住的瞬间，如果不写下来，就会像雨水渗入泥土一样消失。这个博客是我的琥珀收藏。
+          </p>
+          <h2>关于这里</h2>
+          <p>
+            这里记录我的阅读、旅行、思考，以及偶尔的技术笔记。不追求更新频率，只写自己真正想说的话。如果你在这里找到某个句子与你产生了共鸣，那就够了。
+          </p>
+          <h2>关于我</h2>
+          <p>
+            白天写代码，晚上写文章。喜欢旧书店、手冲咖啡、雨天散步。在学着慢下来。
+          </p>
+          <div class="social-links">
+            <a href="#">GitHub</a>
+            <a href="#">Twitter</a>
+            <a href="#">豆瓣</a>
+            <a href="#">RSS</a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="site-footer">
+      <p class="footer-quote">"我们读书，然后就不孤单了。" — 毛姆</p>
+      <p>© 2026 墨迹 · 以文字抵抗遗忘</p>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════
+       DATA
+       ═══════════════════════════════════════ */
+    const articles = [
+      {
+        title: '在旧书店里迷路的下午',
+        category: '随笔',
+        date: '二〇二六年八月十七日',
+        tags: ['阅读', '旧书', '记忆'],
+        content: `
+          <p>书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。</p>
+          <p>我不知道阿明是谁，也不知道这本诗集是怎么辗转来到这家书店的。但我能想象一个年轻人收到这本书时的表情——那种被人认真对待的惊喜。三十九年过去了，这本书还在旅行，从一个人的书架到另一个人的手中。</p>
+          <p>旧书店是一个时间折叠的地方。你翻开一本泛黄的书页，就走进了另一个人的某个下午。书页间夹着的车票、干花、甚至是一张写着电话号码的纸条，都是时间留下的化石。</p>
+          <blockquote>每一本旧书都是一封没有寄达的信，等待下一个拆开它的人。</blockquote>
+          <p>我在那家书店待了三个小时，最后买了两本书。一本是那本无封面的诗集，另一本是1992年版的《瓦尔登湖》。结账的时候，老板看了我一眼，说："你选的这两本，是今天最好的搭配。"</p>
+          <h2>关于迷路</h2>
+          <p>迷路是一种被低估的能力。在这个导航精确到米的时代，我们已经不会迷路了。但迷路意味着你放弃了预设的路线，允许自己被意外带领。旧书店就是这样一个可以让你合法迷路的地方。</p>
+          <p>下次如果你路过一家旧书店，推门进去，不要带目的地。让书架引导你，让那些泛黄的书页为你指路。你可能会找到一本改变你下午的书，也可能会找到一个改变你下午的句子。</p>
+        `
+      },
+      {
+        title: '写代码与写文章',
+        category: '技术',
+        date: '二〇二六年八月五日',
+        tags: ['编程', '写作', '思考'],
+        content: `
+          <p>好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。</p>
+          <p>我见过太多代码像是翻译软件产出的文章——语法正确，但读起来让人昏昏欲睡。也见过一些代码，像是经过精心编辑的散文，每一行都有它存在的理由，每一个变量名都在讲述一个故事。</p>
+          <h2>命名的艺术</h2>
+          <p>给变量命名就像给人物取名。一个好的名字能让读者立刻理解这个角色的身份和意图。你不会把主角叫做"temp_var_1"，那为什么要这样对待你的变量？</p>
+          <blockquote>代码是写给人读的，顺便让机器执行。— Harold Abelson</blockquote>
+          <p>写代码和写文章都需要反复修改。第一稿永远不是最好的。你会重构代码，也会重写段落。删掉那些不必要的部分，直到剩下的每一个字、每一行代码都不可或缺。</p>
+          <p>也许这就是为什么很多程序员也喜欢写作。因为我们本质上都是在做同一件事——用有限的符号，描述无限的世界。</p>
+        `
+      },
+      {
+        title: '雨季的京都',
+        category: '旅行',
+        date: '二〇二六年七月二十日',
+        tags: ['日本', '旅行', '雨'],
+        content: `
+          <p>京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。</p>
+          <p>梅雨季的京都游客很少，这是旅行的隐藏福利。你可以在清水寺的舞台上独自站很久，看雨水从屋檐滴落，在下方的石板上溅起小小的水花。那种安静是奢侈的——在一个每年有上千万游客的地方，你居然可以拥有片刻的独处。</p>
+          <h2>关于透明伞</h2>
+          <p>日本人对透明伞有一种执爱。便利店门口整齐排列的透明雨伞，像是某种集体无意识的审美选择。透明伞的好处是：你撑着它，依然可以看到整个世界被雨水模糊的样子。它不遮挡视线，只是给雨加了一个滤镜。</p>
+          <blockquote>雨是天空写给大地的情书，只不过用的是水做的墨水。</blockquote>
+          <p>我在京都待了五天，几乎每天都在下雨。但我不觉得遗憾。雨天的京都有一种晴天没有的温柔——灯笼的光在湿漉漉的石板上拖出长长的倒影，寺庙的木头散发出潮湿的香气，就连乌鸦的叫声都变得柔和了。</p>
+          <p>旅行的意义不在于看到多少风景，而在于你愿意用多少时间去感受一个地方的呼吸。雨天教会了我慢下来，让京都的呼吸和我的呼吸渐渐同步。</p>
+        `
+      },
+      {
+        title: '关于"慢"的实验',
+        category: '思考',
+        date: '二〇二六年七月八日',
+        tags: ['慢生活', '实验', '注意力'],
+        content: `
+          <p>我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。</p>
+          <p>倍速播放是一种效率的幻觉。你以为你看完了更多的内容，但你真正吸收的可能更少了。就像吃饭一样，狼吞虎咽可以让你更快地填饱肚子，但你永远不会知道那道菜的味道。</p>
+          <h2>注意力是最稀缺的资源</h2>
+          <p>我们生活在一个注意力被不断争夺的时代。每一个应用都在想方设法让你多停留一秒，多滑动一次屏幕。在这样的环境下，能够专注地做一件事——哪怕只是完整地看一部电影——已经变成了一种奢侈。</p>
+          <blockquote>慢不是低效，而是一种深度。你走得越慢，看到的越多。</blockquote>
+          <p>实验结束后，我没有完全回到原来的状态。有些视频我确实会用1.5倍速看（比如某些教程），但对于电影、纪录片、好的演讲，我选择原速。这不是效率的牺牲，而是体验的投资。</p>
+          <p>如果你也有类似的感受，不妨试试这个实验。不一定要一个月，哪怕一周也好。把速度调回1倍，看看世界会有什么不同。</p>
+        `
+      },
+      {
+        title: '深夜面馆',
+        category: '随笔',
+        date: '二〇二六年六月二十五日',
+        tags: ['城市', '夜晚', '温暖'],
+        content: `
+          <p>凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。</p>
+          <p>深夜面馆是城市里最温暖的灯塔。当所有写字楼的灯都熄灭了，当便利店的荧光灯显得格外冷清，面馆里那盏昏黄的灯和锅里翻滚的热气，就是夜归人的北极星。</p>
+          <h2>面馆里的众生相</h2>
+          <p>那个年轻人的电脑包放在旁边的椅子上，屏幕上还亮着未完成的PPT。他吃面的速度很快，像是在和时间赛跑。但当他喝到那碗汤的时候，他停了一下，闭上眼睛，深深地吸了一口气。那一刻，他不再是某个公司的员工，只是一个在深夜需要温暖的人。</p>
+          <blockquote>城市最真实的样子，不在白天的繁华里，而在深夜的那些小店里。</blockquote>
+          <p>护士吃得很慢，也许是因为值了八小时的班终于可以坐下来。她没有看手机，只是安静地看着面碗上方升起的热气。我突然觉得，那团热气像是某种仪式——把一天的疲惫蒸发掉，只留下这一刻的安宁。</p>
+          <p>我离开面馆的时候已经快三点了。老板在门口站着抽烟，看到我出来，点了点头。那个点头里有太多东西：辛苦了，晚安，明天会好的。</p>
+        `
+      }
+    ];
+
+    /* ═══════════════════════════════════════
+       THEME
+       ═══════════════════════════════════════ */
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('blog-theme');
+
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      themeToggle.textContent = savedTheme === 'dark' ? '☀' : '☽';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('blog-theme', next);
+      themeToggle.textContent = next === 'dark' ? '☀' : '☽';
+    });
+
+    /* ═══════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════ */
+    const pages = {
+      home: document.getElementById('page-home'),
+      article: document.getElementById('page-article'),
+      archive: document.getElementById('page-archive'),
+      about: document.getElementById('page-about')
+    };
+
+    function showPage(pageName) {
+      Object.values(pages).forEach(p => {
+        p.classList.remove('visible');
+        if (p.id === 'page-home') p.style.display = 'none';
+      });
+
+      if (pageName === 'home') {
+        pages.home.style.display = 'block';
+      } else {
+        pages[pageName].classList.add('visible');
+      }
+
+      // Update nav active state
+      document.querySelectorAll('.site-nav a[data-page]').forEach(a => {
+        a.classList.toggle('active', a.dataset.page === pageName ||
+          (pageName === 'article' && a.dataset.page === 'home'));
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Nav clicks
+    document.querySelectorAll('.site-nav a[data-page]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage(link.dataset.page);
+      });
+    });
+
+    /* ═══════════════════════════════════════
+       ARTICLE DETAIL
+       ═══════════════════════════════════════ */
+    function showArticle(index) {
+      const a = articles[index];
+      document.getElementById('articleDetailMeta').innerHTML = `
+        <span class="article-category">${a.category}</span>
+        <span class="sep">·</span>
+        <time>${a.date}</time>
+      `;
+      document.getElementById('articleDetailTitle').textContent = a.title;
+      document.getElementById('articleDetailDate').textContent = a.date;
+      document.getElementById('articleDetailBody').innerHTML = a.content;
+      document.getElementById('articleDetailTags').innerHTML = a.tags
+        .map(t => `<span class="tag">${t}</span>`).join('');
+
+      showPage('article');
+    }
+
+    // Article clicks
+    document.querySelectorAll('[data-article]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        showArticle(parseInt(el.dataset.article));
+      });
+    });
+
+    // Back link
+    document.getElementById('backToList').addEventListener('click', (e) => {
+      e.preventDefault();
+      showPage('home');
+    });
+
+    /* ═══════════════════════════════════════
+       ARCHIVE
+       ═══════════════════════════════════════ */
+    function buildArchive() {
+      const years = {};
+      articles.forEach((a, i) => {
+        const year = a.date.match(/[〇零一二三四五六七八九]+/)?.[0] || '其他';
+        if (!years[year]) years[year] = [];
+        years[year].push({ ...a, index: i });
+      });
+
+      let html = '';
+      for (const [year, items] of Object.entries(years)) {
+        html += `<h3 class="archive-year">${year}</h3>`;
+        items.forEach(item => {
+          const shortDate = item.date.replace(/年/, '年').replace(/月/, '月');
+          html += `
+            <div class="archive-item">
+              <span class="archive-date">${shortDate}</span>
+              <a href="#" data-article="${item.index}">${item.title}</a>
+            </div>
+          `;
+        });
+      }
+      document.getElementById('archiveContent').innerHTML = html;
+
+      // Bind archive links
+      document.querySelectorAll('#archiveContent [data-article]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          showArticle(parseInt(el.dataset.article));
+        });
+      });
+    }
+
+    buildArchive();
+
+    // Show home by default
+    pages.home.style.display = 'block';
+  </script>
+</body>
+</html>
