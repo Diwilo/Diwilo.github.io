@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>墨迹 — 后台管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: oklch(0.965 0.008 75);
+      --paper-deep: oklch(0.935 0.012 72);
+      --ink: oklch(0.18 0.015 55);
+      --ink-soft: oklch(0.35 0.012 55);
+      --ink-muted: oklch(0.52 0.01 60);
+      --accent: oklch(0.48 0.12 25);
+      --accent-soft: oklch(0.55 0.08 25);
+      --gold: oklch(0.62 0.1 80);
+      --divider: oklch(0.82 0.015 70);
+      --danger: oklch(0.55 0.18 25);
+      --success: oklch(0.5 0.12 145);
+      --font-display: 'Playfair Display', 'Noto Serif SC', serif;
+      --font-body: 'Crimson Text', 'Noto Serif SC', serif;
+      --font-detail: 'EB Garamond', 'Noto Serif SC', serif;
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    [data-theme="dark"] {
+      --paper: oklch(0.17 0.01 60);
+      --paper-deep: oklch(0.14 0.012 60);
+      --ink: oklch(0.88 0.01 75);
+      --ink-soft: oklch(0.72 0.01 75);
+      --ink-muted: oklch(0.55 0.008 70);
+      --accent: oklch(0.65 0.12 30);
+      --accent-soft: oklch(0.58 0.08 30);
+      --gold: oklch(0.72 0.1 80);
+      --divider: oklch(0.28 0.01 60);
+      --danger: oklch(0.65 0.18 25);
+      --success: oklch(0.6 0.12 145);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* Layout */
+    .admin-wrapper {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header */
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--divider);
+      margin-bottom: 2rem;
+    }
+    .admin-header h1 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .admin-header h1 span { color: var(--ink-muted); font-weight: 400; font-size: 0.85em; }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+    /* Buttons */
+    .btn {
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      padding: 0.5em 1.2em;
+      border: 1px solid var(--divider);
+      background: none;
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: all 0.25s var(--ease-out-quart);
+      text-transform: uppercase;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .btn-primary:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+    .btn-danger { color: var(--danger); border-color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: var(--paper); }
+    .btn-success { color: var(--success); border-color: var(--success); }
+    .btn-success:hover { background: var(--success); color: var(--paper); }
+    .btn-sm { font-size: 0.75rem; padding: 0.35em 0.8em; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--divider);
+      margin-bottom: 2rem;
+    }
+    .tab {
+      font-family: var(--font-detail);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.8em 1.5em;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeUp 0.3s ease forwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Article list */
+    .article-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .article-table th {
+      font-family: var(--font-detail);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      text-align: left;
+      padding: 0.8em 1em;
+      border-bottom: 2px solid var(--divider);
+    }
+    .article-table td {
+      padding: 1em;
+      border-bottom: 1px solid oklch(0.9 0.01 70 / 0.5);
+      vertical-align: top;
+    }
+    .article-table tr:hover td { background: var(--paper-deep); }
+    .article-table .title-cell {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .article-table .meta-cell {
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+    }
+    .article-table .actions-cell {
+      display: flex;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+    .article-table .category-badge {
+      font-family: var(--font-detail);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2em 0.6em;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--ink-muted);
+      font-family: var(--font-detail);
+      font-style: italic;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label {
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+    .form-input, .form-select {
+      border: 1px solid var(--divider);
+      background: var(--paper);
+      padding: 0.6em 0.8em;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--ink-muted); font-style: italic; }
+    .form-textarea {
+      border: 1px solid var(--divider);
+      background: var(--paper);
+      padding: 0.8em;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--ink);
+      outline: none;
+      resize: vertical;
+      min-height: 20rem;
+      line-height: 1.8;
+      transition: border-color 0.3s;
+    }
+    .form-textarea::placeholder { color: var(--ink-muted); font-style: italic; }
+    .form-hint {
+      font-family: var(--font-detail);
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      margin-top: 0.2rem;
+    }
+    .form-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      padding-top: 1rem;
+      border-top: 1px solid var(--divider);
+    }
+
+    /* Settings */
+    .settings-section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--divider);
+    }
+    .settings-section h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(1rem);
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.7em 1.5em;
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      transition: all 0.4s var(--ease-out-quart);
+      z-index: 10002;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: oklch(0.15 0.01 55 / 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--paper);
+      border: 1px solid var(--divider);
+      padding: 2rem;
+      max-width: 28rem;
+      width: 90%;
+      text-align: center;
+    }
+    .modal-box h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .modal-box p {
+      color: var(--ink-muted);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
+
+    /* Status badge */
+    .status-badge {
+      font-family: var(--font-detail);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      padding: 0.2em 0.5em;
+      text-transform: uppercase;
+    }
+    .status-badge.published { color: var(--success); border: 1px solid var(--success); }
+    .status-badge.draft { color: var(--gold); border: 1px solid var(--gold); }
+
+    /* GitHub settings */
+    .github-status {
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+      padding: 0.8em 1em;
+      background: var(--paper-deep);
+      border: 1px solid var(--divider);
+      margin-bottom: 1rem;
+    }
+    .github-status strong { color: var(--ink); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .article-table { font-size: 0.9rem; }
+      .article-table th:nth-child(3), .article-table td:nth-child(3) { display: none; }
+      .admin-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-wrapper">
+
+    <header class="admin-header">
+      <h1>墨迹 <span>· 后台管理</span></h1>
+      <div class="header-actions">
+        <a href="index.html" class="btn btn-sm">查看博客 →</a>
+        <button class="btn btn-sm" id="themeToggle">☽</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="articles">文章管理</button>
+      <button class="tab" data-tab="editor">写新文章</button>
+      <button class="tab" data-tab="settings">设置</button>
+    </div>
+
+    <!-- ARTICLES PANEL -->
+    <div class="panel active" id="panel-articles">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div style="font-family:var(--font-detail); color:var(--ink-muted); font-size:0.85rem;" id="articleCount"></div>
+        <button class="btn btn-primary" id="newArticleBtn">+ 写新文章</button>
+      </div>
+      <table class="article-table">
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>分类</th>
+            <th>日期</th>
+            <th>标签</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="articleTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">还没有文章，写一篇吧 ✨</div>
+    </div>
+
+    <!-- EDITOR PANEL -->
+    <div class="panel" id="panel-editor">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">文章标题</label>
+          <input class="form-input" id="editorTitle" type="text" placeholder="给文章起个好名字">
+        </div>
+        <div class="form-group">
+          <label class="form-label">分类</label>
+          <select class="form-select" id="editorCategory">
+            <option value="随笔">随笔</option>
+            <option value="技术">技术</option>
+            <option value="旅行">旅行</option>
+            <option value="思考">思考</option>
+            <option value="读书">读书</option>
+            <option value="生活">生活</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">标签（逗号分隔）</label>
+          <input class="form-input" id="editorTags" type="text" placeholder="阅读, 旧书, 记忆">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">正文（支持 HTML）</label>
+          <textarea class="form-textarea" id="editorContent" placeholder="用 HTML 写作，例如：<p>段落</p><h2>小标题</h2><blockquote>引用</blockquote>"></textarea>
+          <p class="form-hint">支持 HTML 标签：&lt;p&gt;、&lt;h2&gt;、&lt;blockquote&gt;、&lt;ul&gt;、&lt;li&gt; 等。首段会自动显示首字母下沉效果。</p>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="editorCancel">取消</button>
+        <button class="btn" id="editorPreview">预览</button>
+        <button class="btn btn-primary" id="editorSave">发布文章</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-section">
+        <h3>GitHub 部署</h3>
+        <div class="github-status" id="githubStatus">
+          状态：<strong>未配置</strong> — 配置后可一键同步到 GitHub Pages
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">GitHub Token</label>
+            <input class="form-input" id="settingToken" type="password" placeholder="ghp_xxxxxxxxxxxx">
+            <p class="form-hint">需要 repo 权限。<a href="https://github.com/settings/tokens" target="_blank">生成 Token →</a></p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">仓库名</label>
+            <input class="form-input" id="settingRepo" type="text" placeholder="Diwilo.github.io" value="Diwilo.github.io">
+          </div>
+        </div>
+        <div class="form-actions" style="justify-content:flex-start;">
+          <button class="btn btn-success" id="saveSettings">保存设置</button>
+          <button class="btn btn-primary" id="syncGithub">一键同步到 GitHub</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>数据管理</h3>
+        <div class="form-actions" style="justify-content:flex-start;">
+          <button class="btn" id="exportData">导出所有文章 (JSON)</button>
+          <button class="btn" id="importDataBtn">导入文章</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <h3 id="confirmTitle">确认操作</h3>
+      <p id="confirmMsg">确定要执行此操作吗？</p>
+      <div class="modal-actions">
+        <button class="btn" id="confirmCancel">取消</button>
+        <button class="btn btn-danger" id="confirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ═══════════════════════════════════════
+       DEFAULT ARTICLES (same as index.html)
+       ═══════════════════════════════════════ */
+    const defaultArticles = [
+      {
+        title: '在旧书店里迷路的下午', category: '随笔', date: '二〇二六年八月十七日',
+        tags: ['阅读', '旧书', '记忆'],
+        content: `<p>书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。</p><p>我不知道阿明是谁，也不知道这本诗集是怎么辗转来到这家书店的。但我能想象一个年轻人收到这本书时的表情——那种被人认真对待的惊喜。三十九年过去了，这本书还在旅行，从一个人的书架到另一个人的手中。</p><p>旧书店是一个时间折叠的地方。你翻开一本泛黄的书页，就走进了另一个人的某个下午。书页间夹着的车票、干花、甚至是一张写着电话号码的纸条，都是时间留下的化石。</p><blockquote>每一本旧书都是一封没有寄达的信，等待下一个拆开它的人。</blockquote><p>我在那家书店待了三个小时，最后买了两本书。一本是那本无封面的诗集，另一本是1992年版的《瓦尔登湖》。结账的时候，老板看了我一眼，说："你选的这两本，是今天最好的搭配。"</p><h2>关于迷路</h2><p>迷路是一种被低估的能力。在这个导航精确到米的时代，我们已经不会迷路了。但迷路意味着你放弃了预设的路线，允许自己被意外带领。旧书店就是这样一个可以让你合法迷路的地方。</p><p>下次如果你路过一家旧书店，推门进去，不要带目的地。让书架引导你，让那些泛黄的书页为你指路。你可能会找到一本改变你下午的书，也可能会找到一个改变你下午的句子。</p>`
+      },
+      {
+        title: '写代码与写文章', category: '技术', date: '二〇二六年八月五日',
+        tags: ['编程', '写作', '思考'],
+        content: `<p>好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。</p><p>我见过太多代码像是翻译软件产出的文章——语法正确，但读起来让人昏昏欲睡。也见过一些代码，像是经过精心编辑的散文，每一行都有它存在的理由，每一个变量名都在讲述一个故事。</p><h2>命名的艺术</h2><p>给变量命名就像给人物取名。一个好的名字能让读者立刻理解这个角色的身份和意图。你不会把主角叫做"temp_var_1"，那为什么要这样对待你的变量？</p><blockquote>代码是写给人读的，顺便让机器执行。— Harold Abelson</blockquote><p>写代码和写文章都需要反复修改。第一稿永远不是最好的。你会重构代码，也会重写段落。删掉那些不必要的部分，直到剩下的每一个字、每一行代码都不可或缺。</p><p>也许这就是为什么很多程序员也喜欢写作。因为我们本质上都是在做同一件事——用有限的符号，描述无限的世界。</p>`
+      },
+      {
+        title: '雨季的京都', category: '旅行', date: '二〇二六年七月二十日',
+        tags: ['日本', '旅行', '雨'],
+        content: `<p>京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。</p><p>梅雨季的京都游客很少，这是旅行的隐藏福利。你可以在清水寺的舞台上独自站很久，看雨水从屋檐滴落，在下方的石板上溅起小小的水花。那种安静是奢侈的——在一个每年有上千万游客的地方，你居然可以拥有片刻的独处。</p><h2>关于透明伞</h2><p>日本人对透明伞有一种执爱。便利店门口整齐排列的透明雨伞，像是某种集体无意识的审美选择。透明伞的好处是：你撑着它，依然可以看到整个世界被雨水模糊的样子。它不遮挡视线，只是给雨加了一个滤镜。</p><blockquote>雨是天空写给大地的情书，只不过用的是水做的墨水。</blockquote><p>我在京都待了五天，几乎每天都在下雨。但我不觉得遗憾。雨天的京都有一种晴天没有的温柔——灯笼的光在湿漉漉的石板上拖出长长的倒影，寺庙的木头散发出潮湿的香气，就连乌鸦的叫声都变得柔和了。</p><p>旅行的意义不在于看到多少风景，而在于你愿意用多少时间去感受一个地方的呼吸。雨天教会了我慢下来，让京都的呼吸和我的呼吸渐渐同步。</p>`
+      },
+      {
+        title: '关于"慢"的实验', category: '思考', date: '二〇二六年七月八日',
+        tags: ['慢生活', '实验', '注意力'],
+        content: `<p>我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。</p><p>倍速播放是一种效率的幻觉。你以为你看完了更多的内容，但你真正吸收的可能更少了。就像吃饭一样，狼吞虎咽可以让你更快地填饱肚子，但你永远不会知道那道菜的味道。</p><h2>注意力是最稀缺的资源</h2><p>我们生活在一个注意力被不断争夺的时代。每一个应用都在想方设法让你多停留一秒，多滑动一次屏幕。在这样的环境下，能够专注地做一件事——哪怕只是完整地看一部电影——已经变成了一种奢侈。</p><blockquote>慢不是低效，而是一种深度。你走得越慢，看到的越多。</blockquote><p>实验结束后，我没有完全回到原来的状态。有些视频我确实会用1.5倍速看（比如某些教程），但对于电影、纪录片、好的演讲，我选择原速。这不是效率的牺牲，而是体验的投资。</p><p>如果你也有类似的感受，不妨试试这个实验。不一定要一个月，哪怕一周也好。把速度调回1倍，看看世界会有什么不同。</p>`
+      },
+      {
+        title: '深夜面馆', category: '随笔', date: '二〇二六年六月二十五日',
+        tags: ['城市', '夜晚', '温暖'],
+        content: `<p>凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。</p><p>深夜面馆是城市里最温暖的灯塔。当所有写字楼的灯都熄灭了，当便利店的荧光灯显得格外冷清，面馆里那盏昏黄的灯和锅里翻滚的热气，就是夜归人的北极星。</p><h2>面馆里的众生相</h2><p>那个年轻人的电脑包放在旁边的椅子上，屏幕上还亮着未完成的PPT。他吃面的速度很快，像是在和时间赛跑。但当他喝到那碗汤的时候，他停了一下，闭上眼睛，深深地吸了一口气。那一刻，他不再是某个公司的员工，只是一个在深夜需要温暖的人。</p><blockquote>城市最真实的样子，不在白天的繁华里，而在深夜的那些小店里。</blockquote><p>护士吃得很慢，也许是因为值了八小时的班终于可以坐下来。她没有看手机，只是安静地看着面碗上方升起的热气。我突然觉得，那团热气像是某种仪式——把一天的疲惫蒸发掉，只留下这一刻的安宁。</p><p>我离开面馆的时候已经快三点了。老板在门口站着抽烟，看到我出来，点了点头。那个点头里有太多东西：辛苦了，晚安，明天会好的。</p>`
+      }
+    ];
+
+    /* ═══════════════════════════════════════
+       STATE
+       ═══════════════════════════════════════ */
+    let articles = [];
+    let editingIndex = null;
+    let confirmCallback = null;
+
+    function loadArticles() {
+      const stored = localStorage.getItem('blog-articles');
+      if (stored) {
+        articles = JSON.parse(stored);
+      } else {
+        articles = JSON.parse(JSON.stringify(defaultArticles));
+        saveArticles();
+      }
+    }
+
+    function saveArticles() {
+      localStorage.setItem('blog-articles', JSON.stringify(articles));
+    }
+
+    /* ═══════════════════════════════════════
+       THEME
+       ═══════════════════════════════════════ */
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('blog-theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      themeToggle.textContent = savedTheme === 'dark' ? '☀' : '☽';
+    }
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('blog-theme', next);
+      themeToggle.textContent = next === 'dark' ? '☀' : '☽';
+    });
+
+    /* ═══════════════════════════════════════
+       TOAST
+       ═══════════════════════════════════════ */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    /* ═══════════════════════════════════════
+       CONFIRM MODAL
+       ═══════════════════════════════════════ */
+    function showConfirm(title, msg, cb) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMsg').textContent = msg;
+      document.getElementById('confirmModal').classList.add('open');
+      confirmCallback = cb;
+    }
+    document.getElementById('confirmCancel').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.remove('open');
+      confirmCallback = null;
+    });
+    document.getElementById('confirmOk').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.remove('open');
+      if (confirmCallback) confirmCallback();
+      confirmCallback = null;
+    });
+
+    /* ═══════════════════════════════════════
+       TABS
+       ═══════════════════════════════════════ */
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    /* ═══════════════════════════════════════
+       RENDER ARTICLE TABLE
+       ═══════════════════════════════════════ */
+    function renderArticleTable() {
+      const tbody = document.getElementById('articleTableBody');
+      const empty = document.getElementById('emptyState');
+      const count = document.getElementById('articleCount');
+
+      count.textContent = `共 ${articles.length} 篇文章`;
+
+      if (articles.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      tbody.innerHTML = articles.map((a, i) => `
+        <tr>
+          <td class="title-cell">${escapeHtml(a.title)}</td>
+          <td><span class="category-badge">${escapeHtml(a.category)}</span></td>
+          <td class="meta-cell">${escapeHtml(a.date)}</td>
+          <td class="meta-cell">${a.tags.map(t => escapeHtml(t)).join(', ')}</td>
+          <td>
+            <div class="actions-cell">
+              <button class="btn btn-sm" data-edit="${i}">编辑</button>
+              <button class="btn btn-sm btn-danger" data-delete="${i}">删除</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => editArticle(parseInt(btn.dataset.edit)));
+      });
+      tbody.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.delete);
+          showConfirm('删除文章', `确定要删除「${articles[idx].title}」吗？此操作不可撤销。`, () => {
+            articles.splice(idx, 1);
+            saveArticles();
+            renderArticleTable();
+            showToast('文章已删除');
+          });
+        });
+      });
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    /* ═══════════════════════════════════════
+       EDITOR
+       ═══════════════════════════════════════ */
+    function clearEditor() {
+      document.getElementById('editorTitle').value = '';
+      document.getElementById('editorCategory').value = '随笔';
+      document.getElementById('editorTags').value = '';
+      document.getElementById('editorContent').value = '';
+      editingIndex = null;
+    }
+
+    function editArticle(index) {
+      const a = articles[index];
+      editingIndex = index;
+      document.getElementById('editorTitle').value = a.title;
+      document.getElementById('editorCategory').value = a.category;
+      document.getElementById('editorTags').value = a.tags.join(', ');
+      document.getElementById('editorContent').value = a.content;
+      switchTab('editor');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('newArticleBtn').addEventListener('click', () => {
+      clearEditor();
+      switchTab('editor');
+    });
+
+    document.getElementById('editorCancel').addEventListener('click', () => {
+      clearEditor();
+      switchTab('articles');
+    });
+
+    function getDateStr() {
+      const now = new Date();
+      const cn = ['〇','一','二','三','四','五','六','七','八','九'];
+      const y = String(now.getFullYear()).split('').map(d => cn[parseInt(d)]).join('');
+      return `${y}年${now.getMonth()+1}月${now.getDate()}日`;
+    }
+
+    document.getElementById('editorSave').addEventListener('click', () => {
+      const title = document.getElementById('editorTitle').value.trim();
+      const category = document.getElementById('editorCategory').value;
+      const tags = document.getElementById('editorTags').value.split(',').map(t => t.trim()).filter(Boolean);
+      const content = document.getElementById('editorContent').value.trim();
+
+      if (!title) { showToast('请输入标题'); return; }
+      if (!content) { showToast('请输入正文'); return; }
+
+      const article = { title, category, date: getDateStr(), tags, content };
+
+      if (editingIndex !== null) {
+        article.date = articles[editingIndex].date; // Keep original date
+        articles[editingIndex] = article;
+        showToast('文章已更新 ✨');
+      } else {
+        articles.unshift(article);
+        showToast('文章已发布 🎉');
+      }
+
+      saveArticles();
+      clearEditor();
+      renderArticleTable();
+      switchTab('articles');
+    });
+
+    document.getElementById('editorPreview').addEventListener('click', () => {
+      const content = document.getElementById('editorContent').value;
+      const title = document.getElementById('editorTitle').value || '预览';
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=EB+Garamond:wght@400;500;600&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet"><style>body{max-width:40rem;margin:3rem auto;padding:0 1.5rem;font-family:'Crimson Text','Noto Serif SC',serif;font-size:1.08rem;line-height:2;color:#444;}h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;margin-bottom:0.5rem;}p{margin-bottom:1.6em;text-indent:2em;}p:first-of-type{text-indent:0;}p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:3.6em;float:left;line-height:0.8;margin-right:0.08em;color:#8b3a3a;font-weight:700;}blockquote{border-left:2px solid #c8a84e;padding:0.8rem 1.2rem;margin:1.2rem 0;font-style:italic;color:#888;background:#faf6ee;}h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:600;margin:2rem 0 0.8rem;text-indent:0;}</style></head><body><h1>${title}</h1>${content}</body></html>`);
+    });
+
+    /* ═══════════════════════════════════════
+       SETTINGS
+       ═══════════════════════════════════════ */
+    function loadSettings() {
+      const token = localStorage.getItem('blog-github-token') || '';
+      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+      document.getElementById('settingToken').value = token;
+      document.getElementById('settingRepo').value = repo;
+      updateGithubStatus();
+    }
+
+    function updateGithubStatus() {
+      const token = localStorage.getItem('blog-github-token');
+      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+      const el = document.getElementById('githubStatus');
+      if (token) {
+        el.innerHTML = `状态：<strong>已配置</strong> — 仓库：${repo} · Token：${token.slice(0,4)}…${token.slice(-4)}`;
+      } else {
+        el.innerHTML = '状态：<strong>未配置</strong> — 配置后可一键同步到 GitHub Pages';
+      }
+    }
+
+    document.getElementById('saveSettings').addEventListener('click', () => {
+      const token = document.getElementById('settingToken').value.trim();
+      const repo = document.getElementById('settingRepo').value.trim();
+      if (token) localStorage.setItem('blog-github-token', token);
+      else localStorage.removeItem('blog-github-token');
+      if (repo) localStorage.setItem('blog-github-repo', repo);
+      updateGithubStatus();
+      showToast('设置已保存');
+    });
+
+    /* ═══════════════════════════════════════
+       GITHUB SYNC
+       ═══════════════════════════════════════ */
+    async function getFileSHA(repo, path, token) {
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (res.status === 404) return null;
+      const data = await res.json();
+      return data.sha;
+    }
+
+    async function uploadFile(repo, path, content, message, token, sha) {
+      const body = {
+        message,
+        content: btoa(unescape(encodeURIComponent(content)))
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      return res.ok;
+    }
+
+    function generateIndexHTML() {
+      // Fetch the current index.html and replace the articles array
+      // For simplicity, we'll build a minimal version that reads from localStorage
+      // Actually, we need to generate the full index.html with embedded articles
+      const articlesJSON = JSON.stringify(articles, null, 8);
+
+      // We need to get the current index.html and replace the articles array
+      // For now, let's fetch it and do a replacement
+      return fetch('index.html').then(r => r.text()).then(html => {
+        // Replace the articles array in the script
+        const startMarker = 'const articles = [';
+        const endMarker = '];\n\n    /* ═══════════════════════════════════════\n       UTILS';
+        const startIdx = html.indexOf(startMarker);
+        const endIdx = html.indexOf(endMarker);
+        if (startIdx === -1 || endIdx === -1) {
+          showToast('无法解析 index.html，请手动更新');
+          return null;
+        }
+        return html.substring(0, startIdx) + 'const articles = ' + articlesJSON + ';\n\n    ' + html.substring(endIdx + endMarker.length + 5);
+      });
+    }
+
+    document.getElementById('syncGithub').addEventListener('click', async () => {
+      const token = localStorage.getItem('blog-github-token');
+      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+
+      if (!token) {
+        showToast('请先配置 GitHub Token');
+        return;
+      }
+
+      showToast('正在同步…');
+
+      try {
+        // 1. Upload admin.html
+        const adminHTML = await (await fetch('admin.html')).text();
+        const adminSHA = await getFileSHA(repo, 'admin.html', token);
+        const adminOk = await uploadFile(repo, 'admin.html', adminHTML, '📝 更新后台管理', token, adminSHA);
+        if (!adminOk) throw new Error('上传 admin.html 失败');
+
+        // 2. Generate and upload index.html
+        const indexHTML = await generateIndexHTML();
+        if (!indexHTML) return;
+        const indexSHA = await getFileSHA(repo, 'index.html', token);
+        const indexOk = await uploadFile(repo, 'index.html', indexHTML, '✨ 更新文章内容', token, indexSHA);
+        if (!indexOk) throw new Error('上传 index.html 失败');
+
+        showToast('同步成功 ✨ 一两分钟后生效');
+      } catch (err) {
+        showToast('同步失败：' + err.message);
+      }
+    });
+
+    /* ═══════════════════════════════════════
+       EXPORT / IMPORT
+       ═══════════════════════════════════════ */
+    document.getElementById('exportData').addEventListener('click', () => {
+      const data = JSON.stringify(articles, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'blog-articles-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已导出');
+    });
+
+    document.getElementById('importDataBtn').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          if (!Array.isArray(imported)) throw new Error('格式错误');
+          showConfirm('导入文章', `将导入 ${imported.length} 篇文章，这会替换现有所有文章。继续吗？`, () => {
+            articles = imported;
+            saveArticles();
+            renderArticleTable();
+            showToast(`已导入 ${imported.length} 篇文章`);
+          });
+        } catch (err) {
+          showToast('导入失败：文件格式不正确');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    /* ═══════════════════════════════════════
+       INIT
+       ═══════════════════════════════════════ */
+    loadArticles();
+    renderArticleTable();
+    loadSettings();
+  </script>
+</body>
+</html>
