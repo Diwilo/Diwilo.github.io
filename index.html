@@ -12,32 +12,25 @@
        DESIGN TOKENS
        ═══════════════════════════════════════ */
     :root {
-      /* Paper palette — warm, aged */
       --paper:        oklch(0.965 0.008 75);
       --paper-deep:   oklch(0.935 0.012 72);
       --ink:          oklch(0.18 0.015 55);
       --ink-soft:     oklch(0.35 0.012 55);
       --ink-muted:    oklch(0.52 0.01 60);
-      --accent:       oklch(0.48 0.12 25);   /* aged red — like old book spine */
+      --accent:       oklch(0.48 0.12 25);
       --accent-soft:  oklch(0.55 0.08 25);
-      --gold:         oklch(0.62 0.1 80);    /* gilded detail */
+      --gold:         oklch(0.62 0.1 80);
       --divider:      oklch(0.82 0.015 70);
       --shadow:       oklch(0.15 0.01 55 / 0.08);
-
-      /* Typography */
       --font-display: 'Playfair Display', 'Noto Serif SC', serif;
       --font-body:    'Crimson Text', 'Noto Serif SC', serif;
       --font-detail:  'EB Garamond', 'Noto Serif SC', serif;
-
-      /* Spacing scale */
       --space-xs:  0.5rem;
       --space-sm:  1rem;
       --space-md:  1.75rem;
       --space-lg:  3rem;
       --space-xl:  5rem;
       --space-2xl: 8rem;
-
-      /* Transitions */
       --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
     }
 
@@ -54,12 +47,7 @@
       --shadow:       oklch(0 0 0 / 0.2);
     }
 
-    /* ═══════════════════════════════════════
-       RESET & BASE
-       ═══════════════════════════════════════ */
-    *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html {
       font-size: clamp(15px, 1.1vw, 18px);
@@ -75,33 +63,182 @@
       transition: background 0.6s var(--ease-out-quart), color 0.6s var(--ease-out-quart);
     }
 
-    /* Paper texture overlay */
+    /* Paper texture */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image:
-        url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
     }
 
-    ::selection {
-      background: oklch(0.85 0.06 75);
-      color: var(--ink);
-    }
-    [data-theme="dark"] ::selection {
-      background: oklch(0.35 0.06 75);
-    }
+    ::selection { background: oklch(0.85 0.06 75); color: var(--ink); }
+    [data-theme="dark"] ::selection { background: oklch(0.35 0.06 75); }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-      transition: color 0.3s var(--ease-out-quart);
-    }
+    a { color: var(--accent); text-decoration: none; transition: color 0.3s var(--ease-out-quart); }
     a:hover { color: var(--accent-soft); }
-
     img { max-width: 100%; display: block; }
+
+    /* ═══════════════════════════════════════
+       READING PROGRESS BAR
+       ═══════════════════════════════════════ */
+    .reading-progress {
+      position: fixed;
+      top: 0; left: 0;
+      width: 0%; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      z-index: 10000;
+      transition: width 0.1s linear;
+      opacity: 0;
+    }
+    .reading-progress.active { opacity: 1; }
+
+    /* ═══════════════════════════════════════
+       BACK TO TOP
+       ═══════════════════════════════════════ */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      width: 44px; height: 44px;
+      background: var(--paper-deep);
+      border: 1px solid var(--divider);
+      color: var(--ink-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s var(--ease-out-quart);
+      z-index: 100;
+      font-family: var(--font-detail);
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* ═══════════════════════════════════════
+       SEARCH OVERLAY
+       ═══════════════════════════════════════ */
+    .search-overlay {
+      position: fixed;
+      inset: 0;
+      background: oklch(0.15 0.01 55 / 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s var(--ease-out-quart);
+    }
+    .search-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    [data-theme="dark"] .search-overlay {
+      background: oklch(0.08 0.01 60 / 0.8);
+    }
+
+    .search-box {
+      width: 90%;
+      max-width: 36rem;
+      background: var(--paper);
+      border: 1px solid var(--divider);
+      padding: 0;
+      transform: translateY(-1rem) scale(0.98);
+      transition: transform 0.35s var(--ease-out-quart);
+    }
+    .search-overlay.open .search-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .search-input-wrap {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .search-input-wrap .icon {
+      color: var(--ink-muted);
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: none;
+      font-family: var(--font-body);
+      font-size: 1.1rem;
+      color: var(--ink);
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--ink-muted); font-style: italic; }
+
+    .search-hint {
+      font-family: var(--font-detail);
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      padding: 0.6rem 1.25rem;
+      border-bottom: 1px solid oklch(0.9 0.01 70 / 0.5);
+    }
+
+    .search-results {
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+
+    .search-result-item {
+      display: block;
+      padding: 0.8rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-result-item:hover {
+      background: var(--paper-deep);
+    }
+    .search-result-item .sr-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--ink);
+      margin-bottom: 0.15rem;
+    }
+    .search-result-item .sr-meta {
+      font-family: var(--font-detail);
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+    }
+    .search-result-item mark {
+      background: oklch(0.9 0.1 80 / 0.5);
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    [data-theme="dark"] .search-result-item mark {
+      background: oklch(0.35 0.1 80 / 0.5);
+    }
+
+    .search-empty {
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      font-family: var(--font-detail);
+      font-style: italic;
+      color: var(--ink-muted);
+    }
 
     /* ═══════════════════════════════════════
        LAYOUT
@@ -113,7 +250,7 @@
     }
 
     /* ═══════════════════════════════════════
-       HEADER — Masthead
+       HEADER
        ═══════════════════════════════════════ */
     .site-header {
       padding: var(--space-xl) 0 var(--space-lg);
@@ -129,12 +266,9 @@
       letter-spacing: -0.02em;
       line-height: 1.1;
       color: var(--ink);
+      cursor: pointer;
     }
-
-    .site-title .dot {
-      color: var(--accent);
-      font-weight: 800;
-    }
+    .site-title .dot { color: var(--accent); font-weight: 800; }
 
     .site-subtitle {
       font-family: var(--font-detail);
@@ -145,7 +279,6 @@
       letter-spacing: 0.08em;
     }
 
-    /* Ornamental divider */
     .ornament {
       display: flex;
       align-items: center;
@@ -157,17 +290,14 @@
       letter-spacing: 0.3em;
       user-select: none;
     }
-    .ornament::before,
-    .ornament::after {
+    .ornament::before, .ornament::after {
       content: '';
-      flex: 1;
-      max-width: 6rem;
-      height: 1px;
+      flex: 1; max-width: 6rem; height: 1px;
       background: linear-gradient(90deg, transparent, var(--divider), transparent);
     }
 
     /* ═══════════════════════════════════════
-       NAVIGATION
+       NAV
        ═══════════════════════════════════════ */
     .site-nav {
       display: flex;
@@ -180,7 +310,6 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
-
     .site-nav a {
       color: var(--ink-soft);
       position: relative;
@@ -194,44 +323,70 @@
       background: var(--accent);
       transition: width 0.4s var(--ease-out-quart);
     }
-    .site-nav a:hover::after,
-    .site-nav a.active::after {
-      width: 100%;
-    }
-    .site-nav a.active {
-      color: var(--ink);
-    }
+    .site-nav a:hover::after, .site-nav a.active::after { width: 100%; }
+    .site-nav a.active { color: var(--ink); }
+    .nav-sep { color: var(--divider); font-weight: 300; }
 
-    .nav-sep {
-      color: var(--divider);
-      font-weight: 300;
+    .nav-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--ink-muted); font-size: 1.1rem;
+      padding: 0.3rem; transition: color 0.3s, transform 0.3s var(--ease-out-quart);
+      line-height: 1;
     }
+    .nav-btn:hover { color: var(--gold); transform: rotate(15deg); }
+    .search-btn:hover { transform: none; }
 
-    /* Theme toggle */
-    .theme-toggle {
+    /* ═══════════════════════════════════════
+       MAIN
+       ═══════════════════════════════════════ */
+    .site-main { padding: var(--space-lg) 0 var(--space-2xl); }
+
+    /* ═══════════════════════════════════════
+       TAG FILTER BAR
+       ═══════════════════════════════════════ */
+    .filter-bar {
+      display: none;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: var(--space-lg);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--divider);
+      animation: fadeUp 0.4s var(--ease-out-quart) forwards;
+    }
+    .filter-bar.visible { display: flex; }
+
+    .filter-tag {
+      font-family: var(--font-detail);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3em 0.8em;
+      border: 1px solid var(--divider);
+      color: var(--ink-muted);
+      background: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+    .filter-tag:hover, .filter-tag.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .filter-clear {
+      font-family: var(--font-detail);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
       background: none;
       border: none;
       cursor: pointer;
-      color: var(--ink-muted);
-      font-size: 1.1rem;
-      padding: 0.3rem;
-      transition: color 0.3s, transform 0.3s var(--ease-out-quart);
-      line-height: 1;
+      padding: 0.3em 0.5em;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
-    .theme-toggle:hover {
-      color: var(--gold);
-      transform: rotate(15deg);
-    }
+    .filter-clear:hover { color: var(--accent); }
 
     /* ═══════════════════════════════════════
-       MAIN CONTENT
-       ═══════════════════════════════════════ */
-    .site-main {
-      padding: var(--space-lg) 0 var(--space-2xl);
-    }
-
-    /* ═══════════════════════════════════════
-       ARTICLE LIST (Index)
+       ARTICLE LIST
        ═══════════════════════════════════════ */
     .article-list {
       display: flex;
@@ -249,9 +404,14 @@
     .article-card:nth-child(3) { animation-delay: 0.4s; }
     .article-card:nth-child(4) { animation-delay: 0.55s; }
     .article-card:nth-child(5) { animation-delay: 0.7s; }
+    .article-card:nth-child(6) { animation-delay: 0.85s; }
 
     @keyframes fadeUp {
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .article-card.hidden {
+      display: none !important;
     }
 
     .article-meta {
@@ -264,11 +424,9 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 0.6rem;
+      flex-wrap: wrap;
     }
-
-    .article-meta .sep {
-      color: var(--divider);
-    }
+    .article-meta .sep { color: var(--divider); }
 
     .article-category {
       color: var(--accent);
@@ -276,6 +434,13 @@
       cursor: pointer;
     }
     .article-category:hover { color: var(--accent-soft); }
+
+    .reading-time {
+      color: var(--ink-muted);
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0;
+    }
 
     .article-card h2 {
       font-family: var(--font-display);
@@ -285,20 +450,23 @@
       margin-bottom: 0.8rem;
       letter-spacing: -0.01em;
     }
-
     .article-card h2 a {
       color: var(--ink);
       transition: color 0.3s var(--ease-out-quart);
     }
-    .article-card h2 a:hover {
-      color: var(--accent);
-    }
+    .article-card h2 a:hover { color: var(--accent); }
 
     .article-excerpt {
       font-size: 1.02rem;
       color: var(--ink-soft);
       line-height: 1.85;
       margin-bottom: 1rem;
+    }
+
+    .article-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .read-more {
@@ -315,11 +483,8 @@
       transition: transform 0.3s var(--ease-out-quart);
       display: inline-block;
     }
-    .read-more:hover .arrow {
-      transform: translateX(4px);
-    }
+    .read-more:hover .arrow { transform: translateX(4px); }
 
-    /* Section divider between cards */
     .article-card + .article-card {
       padding-top: var(--space-lg);
       border-top: 1px solid var(--divider);
@@ -328,9 +493,7 @@
     /* ═══════════════════════════════════════
        ARTICLE DETAIL
        ═══════════════════════════════════════ */
-    .article-detail {
-      display: none;
-    }
+    .article-detail { display: none; }
     .article-detail.visible {
       display: block;
       animation: fadeUp 0.6s var(--ease-out-quart) forwards;
@@ -347,15 +510,12 @@
       gap: 0.4rem;
       margin-bottom: var(--space-lg);
     }
-    .article-detail .back-link:hover {
-      color: var(--accent);
-    }
+    .article-detail .back-link:hover { color: var(--accent); }
 
     .article-detail header {
       text-align: center;
       margin-bottom: var(--space-xl);
     }
-
     .article-detail header h1 {
       font-family: var(--font-display);
       font-size: clamp(2rem, 4.5vw, 3rem);
@@ -364,7 +524,6 @@
       letter-spacing: -0.02em;
       margin-bottom: var(--space-sm);
     }
-
     .article-detail header .meta {
       font-family: var(--font-detail);
       font-size: 0.9rem;
@@ -377,16 +536,8 @@
       line-height: 2;
       color: var(--ink-soft);
     }
-
-    .article-body p {
-      margin-bottom: 1.6em;
-      text-indent: 2em;
-    }
-
-    .article-body p:first-of-type {
-      text-indent: 0;
-    }
-
+    .article-body p { margin-bottom: 1.6em; text-indent: 2em; }
+    .article-body p:first-of-type { text-indent: 0; }
     .article-body p:first-of-type::first-letter {
       font-family: var(--font-display);
       font-size: 3.6em;
@@ -397,7 +548,6 @@
       color: var(--accent);
       font-weight: 700;
     }
-
     .article-body blockquote {
       border-left: 2px solid var(--gold);
       padding: var(--space-sm) var(--space-md);
@@ -409,7 +559,6 @@
     [data-theme="dark"] .article-body blockquote {
       background: oklch(0.2 0.01 60 / 0.5);
     }
-
     .article-body h2 {
       font-family: var(--font-display);
       font-size: 1.6rem;
@@ -417,15 +566,8 @@
       margin: var(--space-lg) 0 var(--space-sm);
       text-indent: 0;
     }
-
-    .article-body ul, .article-body ol {
-      padding-left: 1.5em;
-      margin-bottom: 1.6em;
-    }
-
-    .article-body li {
-      margin-bottom: 0.4em;
-    }
+    .article-body ul, .article-body ol { padding-left: 1.5em; margin-bottom: 1.6em; }
+    .article-body li { margin-bottom: 0.4em; }
 
     /* Tags */
     .article-tags {
@@ -436,7 +578,6 @@
       padding-top: var(--space-md);
       border-top: 1px solid var(--divider);
     }
-
     .tag {
       font-family: var(--font-detail);
       font-size: 0.78rem;
@@ -447,18 +588,233 @@
       color: var(--ink-muted);
       transition: all 0.3s var(--ease-out-quart);
       cursor: pointer;
+      background: none;
     }
-    .tag:hover {
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ═══════════════════════════════════════
+       ARTICLE ACTIONS (Like + Share)
+       ═══════════════════════════════════════ */
+    .article-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: var(--space-lg);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--divider);
+    }
+
+    .like-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: none;
+      border: 1px solid var(--divider);
+      padding: 0.5em 1.2em;
+      font-family: var(--font-detail);
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+    .like-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .like-btn.liked {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: oklch(0.95 0.04 25 / 0.3);
+    }
+    [data-theme="dark"] .like-btn.liked {
+      background: oklch(0.25 0.04 25 / 0.3);
+    }
+    .like-btn .heart {
+      transition: transform 0.3s var(--ease-out-quart);
+      display: inline-block;
+    }
+    .like-btn.liked .heart { transform: scale(1.2); }
+
+    .share-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .share-btn {
+      width: 36px; height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--divider);
+      background: none;
+      color: var(--ink-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+    .share-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
     }
 
     /* ═══════════════════════════════════════
+       COMMENTS
+       ═══════════════════════════════════════ */
+    .comments-section {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--divider);
+    }
+
+    .comments-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .comments-count {
+      font-family: var(--font-detail);
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      font-weight: 400;
+    }
+
+    .comment-form {
+      margin-bottom: var(--space-lg);
+    }
+
+    .comment-input-row {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-sm);
+    }
+
+    .comment-input {
+      flex: 1;
+      border: 1px solid var(--divider);
+      background: var(--paper);
+      padding: 0.6em 0.8em;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .comment-input:focus { border-color: var(--accent); }
+    .comment-input::placeholder { color: var(--ink-muted); font-style: italic; }
+
+    .comment-textarea {
+      width: 100%;
+      min-height: 5rem;
+      border: 1px solid var(--divider);
+      background: var(--paper);
+      padding: 0.8em;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--ink);
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.3s;
+      line-height: 1.7;
+    }
+    .comment-textarea:focus { border-color: var(--accent); }
+    .comment-textarea::placeholder { color: var(--ink-muted); font-style: italic; }
+
+    .comment-submit-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: var(--space-xs);
+    }
+
+    .comment-submit {
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      padding: 0.5em 1.5em;
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+    .comment-submit:hover {
+      background: var(--accent);
+    }
+
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .comment-item {
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid oklch(0.9 0.01 70 / 0.5);
+      animation: fadeUp 0.4s var(--ease-out-quart) forwards;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: 0.4rem;
+    }
+
+    .comment-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--paper-deep);
+      border: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .comment-author {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .comment-date {
+      font-family: var(--font-detail);
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+    }
+
+    .comment-text {
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      line-height: 1.75;
+      padding-left: 2.5rem;
+    }
+
+    .comment-delete {
+      background: none;
+      border: none;
+      color: var(--ink-muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-left: auto;
+      font-family: var(--font-detail);
+      letter-spacing: 0.05em;
+      opacity: 0;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .comment-item:hover .comment-delete { opacity: 1; }
+    .comment-delete:hover { color: var(--accent); }
+
+    /* ═══════════════════════════════════════
        ABOUT PAGE
        ═══════════════════════════════════════ */
-    .about-page {
-      display: none;
-    }
+    .about-page { display: none; }
     .about-page.visible {
       display: block;
       animation: fadeUp 0.6s var(--ease-out-quart) forwards;
@@ -470,10 +826,8 @@
       gap: var(--space-lg);
       margin-bottom: var(--space-xl);
     }
-
     .about-avatar {
-      width: 120px;
-      height: 120px;
+      width: 120px; height: 120px;
       border-radius: 50%;
       background: var(--paper-deep);
       border: 2px solid var(--divider);
@@ -485,7 +839,6 @@
       color: var(--ink-muted);
       flex-shrink: 0;
     }
-
     .about-intro h1 {
       font-family: var(--font-display);
       font-size: clamp(1.8rem, 4vw, 2.6rem);
@@ -493,24 +846,18 @@
       line-height: 1.2;
       margin-bottom: 0.5rem;
     }
-
     .about-intro p {
       font-family: var(--font-detail);
       font-size: 1.05rem;
       color: var(--ink-muted);
       font-style: italic;
     }
-
     .about-body {
       font-size: 1.05rem;
       line-height: 2;
       color: var(--ink-soft);
     }
-
-    .about-body p {
-      margin-bottom: 1.6em;
-    }
-
+    .about-body p { margin-bottom: 1.6em; }
     .about-body h2 {
       font-family: var(--font-display);
       font-size: 1.5rem;
@@ -518,7 +865,6 @@
       margin: var(--space-lg) 0 var(--space-sm);
       color: var(--ink);
     }
-
     .social-links {
       display: flex;
       gap: var(--space-md);
@@ -526,7 +872,6 @@
       padding-top: var(--space-md);
       border-top: 1px solid var(--divider);
     }
-
     .social-links a {
       font-family: var(--font-detail);
       font-size: 0.88rem;
@@ -537,21 +882,16 @@
       align-items: center;
       gap: 0.4rem;
     }
-    .social-links a:hover {
-      color: var(--accent);
-    }
+    .social-links a:hover { color: var(--accent); }
 
     /* ═══════════════════════════════════════
        ARCHIVE PAGE
        ═══════════════════════════════════════ */
-    .archive-page {
-      display: none;
-    }
+    .archive-page { display: none; }
     .archive-page.visible {
       display: block;
       animation: fadeUp 0.6s var(--ease-out-quart) forwards;
     }
-
     .archive-page h1 {
       font-family: var(--font-display);
       font-size: clamp(1.8rem, 4vw, 2.4rem);
@@ -559,7 +899,6 @@
       margin-bottom: var(--space-lg);
       text-align: center;
     }
-
     .archive-year {
       font-family: var(--font-display);
       font-size: 1.4rem;
@@ -567,7 +906,6 @@
       color: var(--accent);
       margin: var(--space-lg) 0 var(--space-sm);
     }
-
     .archive-item {
       display: flex;
       align-items: baseline;
@@ -575,7 +913,6 @@
       padding: 0.6rem 0;
       border-bottom: 1px solid oklch(0.88 0.01 70 / 0.5);
     }
-
     .archive-date {
       font-family: var(--font-detail);
       font-size: 0.82rem;
@@ -584,7 +921,6 @@
       flex-shrink: 0;
       width: 5rem;
     }
-
     .archive-item a {
       font-family: var(--font-display);
       font-size: 1.05rem;
@@ -605,7 +941,6 @@
       color: var(--ink-muted);
       letter-spacing: 0.08em;
     }
-
     .footer-quote {
       font-style: italic;
       margin-bottom: var(--space-xs);
@@ -613,48 +948,77 @@
     }
 
     /* ═══════════════════════════════════════
-       RESPONSIVE
+       TOAST NOTIFICATION
        ═══════════════════════════════════════ */
-    @media (max-width: 640px) {
-      .site-header {
-        padding: var(--space-lg) 0 var(--space-md);
-      }
-
-      .site-nav {
-        gap: var(--space-sm);
-        flex-wrap: wrap;
-      }
-
-      .about-header {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .article-body p:first-of-type::first-letter {
-        font-size: 2.8em;
-      }
-
-      .social-links {
-        justify-content: center;
-      }
+    .toast {
+      position: fixed;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(1rem);
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.7em 1.5em;
+      font-family: var(--font-detail);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      transition: all 0.4s var(--ease-out-quart);
+      z-index: 10002;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     /* ═══════════════════════════════════════
-       PRINT STYLES
+       RESPONSIVE
        ═══════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .site-header { padding: var(--space-lg) 0 var(--space-md); }
+      .site-nav { gap: var(--space-sm); flex-wrap: wrap; }
+      .about-header { flex-direction: column; text-align: center; }
+      .article-body p:first-of-type::first-letter { font-size: 2.8em; }
+      .social-links { justify-content: center; }
+      .article-actions { flex-direction: column; gap: var(--space-sm); }
+      .comment-input-row { flex-direction: column; }
+      .back-to-top { bottom: 1rem; right: 1rem; }
+    }
+
     @media print {
       body::before { display: none; }
-      .site-nav, .theme-toggle { display: none; }
+      .site-nav, .theme-toggle, .reading-progress, .back-to-top, .search-overlay { display: none; }
       .article-body { font-size: 11pt; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Reading Progress -->
+  <div class="reading-progress" id="readingProgress"></div>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Search Overlay -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <span class="icon">🔍</span>
+        <input class="search-input" id="searchInput" type="text" placeholder="搜索文章…" autocomplete="off">
+      </div>
+      <div class="search-hint">输入关键词搜索标题、内容和标签</div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
   <div class="site-wrapper">
 
     <!-- ═══ HEADER ═══ -->
     <header class="site-header">
-      <h1 class="site-title">墨迹<span class="dot">.</span></h1>
+      <h1 class="site-title" id="siteTitle">墨迹<span class="dot">.</span></h1>
       <p class="site-subtitle">文字是时间的琥珀</p>
       <div class="ornament">✦</div>
       <nav class="site-nav">
@@ -664,83 +1028,21 @@
         <span class="nav-sep">·</span>
         <a href="#" data-page="about">关于</a>
         <span class="nav-sep">·</span>
-        <button class="theme-toggle" id="themeToggle" aria-label="切换主题">☽</button>
+        <button class="nav-btn search-btn" id="searchBtn" aria-label="搜索">🔍</button>
+        <button class="nav-btn theme-toggle" id="themeToggle" aria-label="切换主题">☽</button>
       </nav>
     </header>
 
     <!-- ═══ MAIN ═══ -->
     <main class="site-main">
 
-      <!-- HOME — Article List -->
+      <!-- HOME -->
       <section class="page-content" id="page-home">
-        <div class="article-list">
 
-          <article class="article-card">
-            <div class="article-meta">
-              <span class="article-category">随笔</span>
-              <span class="sep">·</span>
-              <time>二〇二六年八月十七日</time>
-            </div>
-            <h2><a href="#" data-article="0">在旧书店里迷路的下午</a></h2>
-            <p class="article-excerpt">
-              书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。
-            </p>
-            <a href="#" class="read-more" data-article="0">继续阅读 <span class="arrow">→</span></a>
-          </article>
+        <!-- Tag Filter Bar -->
+        <div class="filter-bar" id="filterBar"></div>
 
-          <article class="article-card">
-            <div class="article-meta">
-              <span class="article-category">技术</span>
-              <span class="sep">·</span>
-              <time>二〇二六年八月五日</time>
-            </div>
-            <h2><a href="#" data-article="1">写代码与写文章</a></h2>
-            <p class="article-excerpt">
-              好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。
-            </p>
-            <a href="#" class="read-more" data-article="1">继续阅读 <span class="arrow">→</span></a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <span class="article-category">旅行</span>
-              <span class="sep">·</span>
-              <time>二〇二六年七月二十日</time>
-            </div>
-            <h2><a href="#" data-article="2">雨季的京都</a></h2>
-            <p class="article-excerpt">
-              京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。
-            </p>
-            <a href="#" class="read-more" data-article="2">继续阅读 <span class="arrow">→</span></a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <span class="article-category">思考</span>
-              <span class="sep">·</span>
-              <time>二〇二六年七月八日</time>
-            </div>
-            <h2><a href="#" data-article="3">关于"慢"的实验</a></h2>
-            <p class="article-excerpt">
-              我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。
-            </p>
-            <a href="#" class="read-more" data-article="3">继续阅读 <span class="arrow">→</span></a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <span class="article-category">随笔</span>
-              <span class="sep">·</span>
-              <time>二〇二六年六月二十五日</time>
-            </div>
-            <h2><a href="#" data-article="4">深夜面馆</a></h2>
-            <p class="article-excerpt">
-              凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。
-            </p>
-            <a href="#" class="read-more" data-article="4">继续阅读 <span class="arrow">→</span></a>
-          </article>
-
-        </div>
+        <div class="article-list" id="articleList"></div>
       </section>
 
       <!-- ARTICLE DETAIL -->
@@ -753,6 +1055,29 @@
         </header>
         <div class="article-body" id="articleDetailBody"></div>
         <div class="article-tags" id="articleDetailTags"></div>
+        <div class="article-actions">
+          <button class="like-btn" id="likeBtn"><span class="heart">♡</span> <span id="likeCount">0</span></button>
+          <div class="share-group">
+            <button class="share-btn" data-share="copy" title="复制链接">🔗</button>
+            <button class="share-btn" data-share="twitter" title="分享到 Twitter">𝕏</button>
+            <button class="share-btn" data-share="weibo" title="分享到微博">微</button>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="comments-section">
+          <h3 class="comments-title">留言 <span class="comments-count" id="commentsCount"></span></h3>
+          <div class="comment-form">
+            <div class="comment-input-row">
+              <input class="comment-input" id="commentName" type="text" placeholder="你的名字" maxlength="20">
+            </div>
+            <textarea class="comment-textarea" id="commentText" placeholder="写下你的想法…" maxlength="1000"></textarea>
+            <div class="comment-submit-row">
+              <button class="comment-submit" id="commentSubmit">发表</button>
+            </div>
+          </div>
+          <div class="comment-list" id="commentList"></div>
+        </div>
       </section>
 
       <!-- ARCHIVE -->
@@ -771,19 +1096,13 @@
           </div>
         </div>
         <div class="about-body">
-          <p>
-            我相信文字是时间的琥珀。那些值得记住的瞬间，如果不写下来，就会像雨水渗入泥土一样消失。这个博客是我的琥珀收藏。
-          </p>
+          <p>我相信文字是时间的琥珀。那些值得记住的瞬间，如果不写下来，就会像雨水渗入泥土一样消失。这个博客是我的琥珀收藏。</p>
           <h2>关于这里</h2>
-          <p>
-            这里记录我的阅读、旅行、思考，以及偶尔的技术笔记。不追求更新频率，只写自己真正想说的话。如果你在这里找到某个句子与你产生了共鸣，那就够了。
-          </p>
+          <p>这里记录我的阅读、旅行、思考，以及偶尔的技术笔记。不追求更新频率，只写自己真正想说的话。如果你在这里找到某个句子与你产生了共鸣，那就够了。</p>
           <h2>关于我</h2>
-          <p>
-            白天写代码，晚上写文章。喜欢旧书店、手冲咖啡、雨天散步。在学着慢下来。
-          </p>
+          <p>白天写代码，晚上写文章。喜欢旧书店、手冲咖啡、雨天散步。在学着慢下来。</p>
           <div class="social-links">
-            <a href="#">GitHub</a>
+            <a href="https://github.com/Diwilo" target="_blank">GitHub</a>
             <a href="#">Twitter</a>
             <a href="#">豆瓣</a>
             <a href="#">RSS</a>
@@ -793,7 +1112,6 @@
 
     </main>
 
-    <!-- ═══ FOOTER ═══ -->
     <footer class="site-footer">
       <p class="footer-quote">"我们读书，然后就不孤单了。" — 毛姆</p>
       <p>© 2026 墨迹 · 以文字抵抗遗忘</p>
@@ -811,96 +1129,110 @@
         category: '随笔',
         date: '二〇二六年八月十七日',
         tags: ['阅读', '旧书', '记忆'],
-        content: `
-          <p>书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。</p>
-          <p>我不知道阿明是谁，也不知道这本诗集是怎么辗转来到这家书店的。但我能想象一个年轻人收到这本书时的表情——那种被人认真对待的惊喜。三十九年过去了，这本书还在旅行，从一个人的书架到另一个人的手中。</p>
-          <p>旧书店是一个时间折叠的地方。你翻开一本泛黄的书页，就走进了另一个人的某个下午。书页间夹着的车票、干花、甚至是一张写着电话号码的纸条，都是时间留下的化石。</p>
-          <blockquote>每一本旧书都是一封没有寄达的信，等待下一个拆开它的人。</blockquote>
-          <p>我在那家书店待了三个小时，最后买了两本书。一本是那本无封面的诗集，另一本是1992年版的《瓦尔登湖》。结账的时候，老板看了我一眼，说："你选的这两本，是今天最好的搭配。"</p>
-          <h2>关于迷路</h2>
-          <p>迷路是一种被低估的能力。在这个导航精确到米的时代，我们已经不会迷路了。但迷路意味着你放弃了预设的路线，允许自己被意外带领。旧书店就是这样一个可以让你合法迷路的地方。</p>
-          <p>下次如果你路过一家旧书店，推门进去，不要带目的地。让书架引导你，让那些泛黄的书页为你指路。你可能会找到一本改变你下午的书，也可能会找到一个改变你下午的句子。</p>
-        `
+        content: `<p>书店深处有一股纸张氧化后的甜味，像是时间留下的指纹。我在第三排书架的角落翻到一本没有封面的诗集，扉页上有人用蓝色钢笔写着："给阿明，愿你永远有迷路的勇气。"日期是1987年。</p><p>我不知道阿明是谁，也不知道这本诗集是怎么辗转来到这家书店的。但我能想象一个年轻人收到这本书时的表情——那种被人认真对待的惊喜。三十九年过去了，这本书还在旅行，从一个人的书架到另一个人的手中。</p><p>旧书店是一个时间折叠的地方。你翻开一本泛黄的书页，就走进了另一个人的某个下午。书页间夹着的车票、干花、甚至是一张写着电话号码的纸条，都是时间留下的化石。</p><blockquote>每一本旧书都是一封没有寄达的信，等待下一个拆开它的人。</blockquote><p>我在那家书店待了三个小时，最后买了两本书。一本是那本无封面的诗集，另一本是1992年版的《瓦尔登湖》。结账的时候，老板看了我一眼，说："你选的这两本，是今天最好的搭配。"</p><h2>关于迷路</h2><p>迷路是一种被低估的能力。在这个导航精确到米的时代，我们已经不会迷路了。但迷路意味着你放弃了预设的路线，允许自己被意外带领。旧书店就是这样一个可以让你合法迷路的地方。</p><p>下次如果你路过一家旧书店，推门进去，不要带目的地。让书架引导你，让那些泛黄的书页为你指路。你可能会找到一本改变你下午的书，也可能会找到一个改变你下午的句子。</p>`
       },
       {
         title: '写代码与写文章',
         category: '技术',
         date: '二〇二六年八月五日',
         tags: ['编程', '写作', '思考'],
-        content: `
-          <p>好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。</p>
-          <p>我见过太多代码像是翻译软件产出的文章——语法正确，但读起来让人昏昏欲睡。也见过一些代码，像是经过精心编辑的散文，每一行都有它存在的理由，每一个变量名都在讲述一个故事。</p>
-          <h2>命名的艺术</h2>
-          <p>给变量命名就像给人物取名。一个好的名字能让读者立刻理解这个角色的身份和意图。你不会把主角叫做"temp_var_1"，那为什么要这样对待你的变量？</p>
-          <blockquote>代码是写给人读的，顺便让机器执行。— Harold Abelson</blockquote>
-          <p>写代码和写文章都需要反复修改。第一稿永远不是最好的。你会重构代码，也会重写段落。删掉那些不必要的部分，直到剩下的每一个字、每一行代码都不可或缺。</p>
-          <p>也许这就是为什么很多程序员也喜欢写作。因为我们本质上都是在做同一件事——用有限的符号，描述无限的世界。</p>
-        `
+        content: `<p>好的代码和好的文章有一个共同点：它们都在试图把复杂的事情说清楚。不同的是，代码的读者是机器和人，而文章的读者只有人。但两者都需要结构、节奏，以及恰到好处的留白。</p><p>我见过太多代码像是翻译软件产出的文章——语法正确，但读起来让人昏昏欲睡。也见过一些代码，像是经过精心编辑的散文，每一行都有它存在的理由，每一个变量名都在讲述一个故事。</p><h2>命名的艺术</h2><p>给变量命名就像给人物取名。一个好的名字能让读者立刻理解这个角色的身份和意图。你不会把主角叫做"temp_var_1"，那为什么要这样对待你的变量？</p><blockquote>代码是写给人读的，顺便让机器执行。— Harold Abelson</blockquote><p>写代码和写文章都需要反复修改。第一稿永远不是最好的。你会重构代码，也会重写段落。删掉那些不必要的部分，直到剩下的每一个字、每一行代码都不可或缺。</p><p>也许这就是为什么很多程序员也喜欢写作。因为我们本质上都是在做同一件事——用有限的符号，描述无限的世界。</p>`
       },
       {
         title: '雨季的京都',
         category: '旅行',
         date: '二〇二六年七月二十日',
         tags: ['日本', '旅行', '雨'],
-        content: `
-          <p>京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。</p>
-          <p>梅雨季的京都游客很少，这是旅行的隐藏福利。你可以在清水寺的舞台上独自站很久，看雨水从屋檐滴落，在下方的石板上溅起小小的水花。那种安静是奢侈的——在一个每年有上千万游客的地方，你居然可以拥有片刻的独处。</p>
-          <h2>关于透明伞</h2>
-          <p>日本人对透明伞有一种执爱。便利店门口整齐排列的透明雨伞，像是某种集体无意识的审美选择。透明伞的好处是：你撑着它，依然可以看到整个世界被雨水模糊的样子。它不遮挡视线，只是给雨加了一个滤镜。</p>
-          <blockquote>雨是天空写给大地的情书，只不过用的是水做的墨水。</blockquote>
-          <p>我在京都待了五天，几乎每天都在下雨。但我不觉得遗憾。雨天的京都有一种晴天没有的温柔——灯笼的光在湿漉漉的石板上拖出长长的倒影，寺庙的木头散发出潮湿的香气，就连乌鸦的叫声都变得柔和了。</p>
-          <p>旅行的意义不在于看到多少风景，而在于你愿意用多少时间去感受一个地方的呼吸。雨天教会了我慢下来，让京都的呼吸和我的呼吸渐渐同步。</p>
-        `
+        content: `<p>京都的雨有一种耐心。它不像南方的暴雨那样急躁，而是慢慢渗透进石板路的缝隙里，让苔藓的颜色变得更加浓郁。在岚山，我看见一个老人撑着透明伞站在竹林入口，像是在等一个约定了一辈子的人。</p><p>梅雨季的京都游客很少，这是旅行的隐藏福利。你可以在清水寺的舞台上独自站很久，看雨水从屋檐滴落，在下方的石板上溅起小小的水花。那种安静是奢侈的——在一个每年有上千万游客的地方，你居然可以拥有片刻的独处。</p><h2>关于透明伞</h2><p>日本人对透明伞有一种执爱。便利店门口整齐排列的透明雨伞，像是某种集体无意识的审美选择。透明伞的好处是：你撑着它，依然可以看到整个世界被雨水模糊的样子。它不遮挡视线，只是给雨加了一个滤镜。</p><blockquote>雨是天空写给大地的情书，只不过用的是水做的墨水。</blockquote><p>我在京都待了五天，几乎每天都在下雨。但我不觉得遗憾。雨天的京都有一种晴天没有的温柔——灯笼的光在湿漉漉的石板上拖出长长的倒影，寺庙的木头散发出潮湿的香气，就连乌鸦的叫声都变得柔和了。</p><p>旅行的意义不在于看到多少风景，而在于你愿意用多少时间去感受一个地方的呼吸。雨天教会了我慢下来，让京都的呼吸和我的呼吸渐渐同步。</p>`
       },
       {
         title: '关于"慢"的实验',
         category: '思考',
         date: '二〇二六年七月八日',
         tags: ['慢生活', '实验', '注意力'],
-        content: `
-          <p>我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。</p>
-          <p>倍速播放是一种效率的幻觉。你以为你看完了更多的内容，但你真正吸收的可能更少了。就像吃饭一样，狼吞虎咽可以让你更快地填饱肚子，但你永远不会知道那道菜的味道。</p>
-          <h2>注意力是最稀缺的资源</h2>
-          <p>我们生活在一个注意力被不断争夺的时代。每一个应用都在想方设法让你多停留一秒，多滑动一次屏幕。在这样的环境下，能够专注地做一件事——哪怕只是完整地看一部电影——已经变成了一种奢侈。</p>
-          <blockquote>慢不是低效，而是一种深度。你走得越慢，看到的越多。</blockquote>
-          <p>实验结束后，我没有完全回到原来的状态。有些视频我确实会用1.5倍速看（比如某些教程），但对于电影、纪录片、好的演讲，我选择原速。这不是效率的牺牲，而是体验的投资。</p>
-          <p>如果你也有类似的感受，不妨试试这个实验。不一定要一个月，哪怕一周也好。把速度调回1倍，看看世界会有什么不同。</p>
-        `
+        content: `<p>我决定做一个实验：一个月不用倍速看任何视频。第一天很难受，像是戒断反应。但到了第二周，我开始注意到一些以前忽略的东西——演员的微表情、镜头移动的节奏、背景音乐里藏着的弦乐。</p><p>倍速播放是一种效率的幻觉。你以为你看完了更多的内容，但你真正吸收的可能更少了。就像吃饭一样，狼吞虎咽可以让你更快地填饱肚子，但你永远不会知道那道菜的味道。</p><h2>注意力是最稀缺的资源</h2><p>我们生活在一个注意力被不断争夺的时代。每一个应用都在想方设法让你多停留一秒，多滑动一次屏幕。在这样的环境下，能够专注地做一件事——哪怕只是完整地看一部电影——已经变成了一种奢侈。</p><blockquote>慢不是低效，而是一种深度。你走得越慢，看到的越多。</blockquote><p>实验结束后，我没有完全回到原来的状态。有些视频我确实会用1.5倍速看（比如某些教程），但对于电影、纪录片、好的演讲，我选择原速。这不是效率的牺牲，而是体验的投资。</p><p>如果你也有类似的感受，不妨试试这个实验。不一定要一个月，哪怕一周也好。把速度调回1倍，看看世界会有什么不同。</p>`
       },
       {
         title: '深夜面馆',
         category: '随笔',
         date: '二〇二六年六月二十五日',
         tags: ['城市', '夜晚', '温暖'],
-        content: `
-          <p>凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。</p>
-          <p>深夜面馆是城市里最温暖的灯塔。当所有写字楼的灯都熄灭了，当便利店的荧光灯显得格外冷清，面馆里那盏昏黄的灯和锅里翻滚的热气，就是夜归人的北极星。</p>
-          <h2>面馆里的众生相</h2>
-          <p>那个年轻人的电脑包放在旁边的椅子上，屏幕上还亮着未完成的PPT。他吃面的速度很快，像是在和时间赛跑。但当他喝到那碗汤的时候，他停了一下，闭上眼睛，深深地吸了一口气。那一刻，他不再是某个公司的员工，只是一个在深夜需要温暖的人。</p>
-          <blockquote>城市最真实的样子，不在白天的繁华里，而在深夜的那些小店里。</blockquote>
-          <p>护士吃得很慢，也许是因为值了八小时的班终于可以坐下来。她没有看手机，只是安静地看着面碗上方升起的热气。我突然觉得，那团热气像是某种仪式——把一天的疲惫蒸发掉，只留下这一刻的安宁。</p>
-          <p>我离开面馆的时候已经快三点了。老板在门口站着抽烟，看到我出来，点了点头。那个点头里有太多东西：辛苦了，晚安，明天会好的。</p>
-        `
+        content: `<p>凌晨两点的面馆里只有三个人：一个加班到模糊的年轻人、一个刚下夜班的护士、还有我。老板什么都没问，只是多煮了一碗汤，分成三碗端上来。有些善意不需要语言，一碗热汤就够了。</p><p>深夜面馆是城市里最温暖的灯塔。当所有写字楼的灯都熄灭了，当便利店的荧光灯显得格外冷清，面馆里那盏昏黄的灯和锅里翻滚的热气，就是夜归人的北极星。</p><h2>面馆里的众生相</h2><p>那个年轻人的电脑包放在旁边的椅子上，屏幕上还亮着未完成的PPT。他吃面的速度很快，像是在和时间赛跑。但当他喝到那碗汤的时候，他停了一下，闭上眼睛，深深地吸了一口气。那一刻，他不再是某个公司的员工，只是一个在深夜需要温暖的人。</p><blockquote>城市最真实的样子，不在白天的繁华里，而在深夜的那些小店里。</blockquote><p>护士吃得很慢，也许是因为值了八小时的班终于可以坐下来。她没有看手机，只是安静地看着面碗上方升起的热气。我突然觉得，那团热气像是某种仪式——把一天的疲惫蒸发掉，只留下这一刻的安宁。</p><p>我离开面馆的时候已经快三点了。老板在门口站着抽烟，看到我出来，点了点头。那个点头里有太多东西：辛苦了，晚安，明天会好的。</p>`
       }
     ];
+
+    /* ═══════════════════════════════════════
+       UTILS
+       ═══════════════════════════════════════ */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function getReadingTime(html) {
+      const text = html.replace(/<[^>]+>/g, '');
+      const chars = text.length;
+      const mins = Math.max(1, Math.ceil(chars / 500));
+      return mins;
+    }
+
+    function stripHtml(html) {
+      return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function timeAgo() {
+      const now = new Date();
+      return `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+    }
 
     /* ═══════════════════════════════════════
        THEME
        ═══════════════════════════════════════ */
     const themeToggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('blog-theme');
-
     if (savedTheme) {
       document.documentElement.setAttribute('data-theme', savedTheme);
       themeToggle.textContent = savedTheme === 'dark' ? '☀' : '☽';
     }
-
     themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('blog-theme', next);
       themeToggle.textContent = next === 'dark' ? '☀' : '☽';
+    });
+
+    /* ═══════════════════════════════════════
+       READING PROGRESS
+       ═══════════════════════════════════════ */
+    const progressBar = document.getElementById('readingProgress');
+    let currentArticleIndex = null;
+
+    function updateProgress() {
+      if (currentArticleIndex === null) { progressBar.classList.remove('active'); return; }
+      progressBar.classList.add('active');
+      const body = document.getElementById('articleDetailBody');
+      if (!body) return;
+      const rect = body.getBoundingClientRect();
+      const total = body.scrollHeight;
+      const scrolled = -rect.top + window.innerHeight * 0.3;
+      const pct = Math.min(100, Math.max(0, (scrolled / total) * 100));
+      progressBar.style.width = pct + '%';
+    }
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+
+    /* ═══════════════════════════════════════
+       BACK TO TOP
+       ═══════════════════════════════════════ */
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      backToTop.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     /* ═══════════════════════════════════════
@@ -918,61 +1250,357 @@
         p.classList.remove('visible');
         if (p.id === 'page-home') p.style.display = 'none';
       });
-
       if (pageName === 'home') {
         pages.home.style.display = 'block';
+        currentArticleIndex = null;
+        updateProgress();
       } else {
         pages[pageName].classList.add('visible');
       }
-
-      // Update nav active state
       document.querySelectorAll('.site-nav a[data-page]').forEach(a => {
         a.classList.toggle('active', a.dataset.page === pageName ||
           (pageName === 'article' && a.dataset.page === 'home'));
       });
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Nav clicks
     document.querySelectorAll('.site-nav a[data-page]').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage(link.dataset.page);
-      });
+      link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); });
     });
+
+    document.getElementById('siteTitle').addEventListener('click', () => showPage('home'));
+
+    /* ═══════════════════════════════════════
+       SEARCH
+       ═══════════════════════════════════════ */
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchBtn = document.getElementById('searchBtn');
+
+    function openSearch() {
+      searchOverlay.classList.add('open');
+      searchInput.value = '';
+      searchInput.focus();
+      renderSearchResults('');
+    }
+    function closeSearch() {
+      searchOverlay.classList.remove('open');
+    }
+
+    searchBtn.addEventListener('click', openSearch);
+    searchOverlay.addEventListener('click', (e) => {
+      if (e.target === searchOverlay) closeSearch();
+    });
+
+    // Keyboard shortcut: Cmd/Ctrl + K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+      if (e.key === 'Escape') closeSearch();
+    });
+
+    function renderSearchResults(query) {
+      if (!query.trim()) {
+        searchResults.innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+        return;
+      }
+      const q = query.toLowerCase();
+      const hits = articles.map((a, i) => {
+        const text = stripHtml(a.content);
+        const titleMatch = a.title.toLowerCase().includes(q);
+        const contentMatch = text.toLowerCase().includes(q);
+        const tagMatch = a.tags.some(t => t.toLowerCase().includes(q));
+        if (!titleMatch && !contentMatch && !tagMatch) return null;
+        // Find snippet
+        let snippet = '';
+        if (contentMatch) {
+          const idx = text.toLowerCase().indexOf(q);
+          const start = Math.max(0, idx - 30);
+          const end = Math.min(text.length, idx + q.length + 60);
+          snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+        }
+        return { index: i, title: a.title, category: a.category, date: a.date, snippet, titleMatch };
+      }).filter(Boolean);
+
+      if (hits.length === 0) {
+        searchResults.innerHTML = `<div class="search-empty">没有找到与 "${query}" 相关的文章</div>`;
+        return;
+      }
+
+      searchResults.innerHTML = hits.map(h => {
+        const highlightedTitle = h.titleMatch
+          ? h.title.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>')
+          : h.title;
+        const highlightedSnippet = h.snippet
+          ? h.snippet.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>')
+          : '';
+        return `<div class="search-result-item" data-article="${h.index}">
+          <div class="sr-title">${highlightedTitle}</div>
+          <div class="sr-meta">${h.category} · ${h.date}${highlightedSnippet ? ' — ' + highlightedSnippet : ''}</div>
+        </div>`;
+      }).join('');
+
+      searchResults.querySelectorAll('.search-result-item').forEach(el => {
+        el.addEventListener('click', () => {
+          closeSearch();
+          showArticle(parseInt(el.dataset.article));
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
+
+    /* ═══════════════════════════════════════
+       TAG FILTER
+       ═══════════════════════════════════════ */
+    const filterBar = document.getElementById('filterBar');
+    let activeFilter = null;
+
+    function buildFilterBar() {
+      const allTags = [...new Set(articles.flatMap(a => a.tags))];
+      filterBar.innerHTML = allTags.map(t =>
+        `<button class="filter-tag" data-filter="${t}">${t}</button>`
+      ).join('') + `<button class="filter-clear" id="filterClear">清除筛选</button>`;
+
+      filterBar.querySelectorAll('.filter-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tag = btn.dataset.filter;
+          if (activeFilter === tag) {
+            activeFilter = null;
+          } else {
+            activeFilter = tag;
+          }
+          applyFilter();
+        });
+      });
+
+      document.getElementById('filterClear').addEventListener('click', () => {
+        activeFilter = null;
+        applyFilter();
+      });
+    }
+
+    function applyFilter() {
+      filterBar.classList.add('visible');
+      filterBar.querySelectorAll('.filter-tag').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === activeFilter);
+      });
+
+      document.querySelectorAll('.article-card').forEach((card, i) => {
+        if (!activeFilter) {
+          card.classList.remove('hidden');
+        } else {
+          const hasTag = articles[i].tags.includes(activeFilter);
+          card.classList.toggle('hidden', !hasTag);
+        }
+      });
+    }
+
+    /* ═══════════════════════════════════════
+       RENDER ARTICLE LIST
+       ═══════════════════════════════════════ */
+    function renderArticleList() {
+      const list = document.getElementById('articleList');
+      list.innerHTML = articles.map((a, i) => {
+        const readTime = getReadingTime(a.content);
+        return `<article class="article-card">
+          <div class="article-meta">
+            <span class="article-category" data-category="${a.category}">${a.category}</span>
+            <span class="sep">·</span>
+            <time>${a.date}</time>
+            <span class="sep">·</span>
+            <span class="reading-time">${readTime} 分钟阅读</span>
+          </div>
+          <h2><a href="#" data-article="${i}">${a.title}</a></h2>
+          <p class="article-excerpt">${stripHtml(a.content).slice(0, 120)}…</p>
+          <div class="article-card-footer">
+            <a href="#" class="read-more" data-article="${i}">继续阅读 <span class="arrow">→</span></a>
+          </div>
+        </article>`;
+      }).join('');
+
+      list.querySelectorAll('[data-article]').forEach(el => {
+        el.addEventListener('click', (e) => { e.preventDefault(); showArticle(parseInt(el.dataset.article)); });
+      });
+
+      list.querySelectorAll('.article-category').forEach(el => {
+        el.addEventListener('click', () => {
+          activeFilter = el.dataset.category;
+          // Also filter by category using tags that match category
+          // Actually, let's filter by the category name matching tags or category
+          applyFilter();
+        });
+      });
+    }
 
     /* ═══════════════════════════════════════
        ARTICLE DETAIL
        ═══════════════════════════════════════ */
     function showArticle(index) {
       const a = articles[index];
+      currentArticleIndex = index;
+      updateProgress();
+
       document.getElementById('articleDetailMeta').innerHTML = `
         <span class="article-category">${a.category}</span>
         <span class="sep">·</span>
         <time>${a.date}</time>
+        <span class="sep">·</span>
+        <span class="reading-time">${getReadingTime(a.content)} 分钟阅读</span>
       `;
       document.getElementById('articleDetailTitle').textContent = a.title;
       document.getElementById('articleDetailDate').textContent = a.date;
       document.getElementById('articleDetailBody').innerHTML = a.content;
       document.getElementById('articleDetailTags').innerHTML = a.tags
-        .map(t => `<span class="tag">${t}</span>`).join('');
+        .map(t => `<button class="tag" data-tag="${t}">${t}</button>`).join('');
+
+      // Tags click → filter
+      document.querySelectorAll('#articleDetailTags .tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeFilter = btn.dataset.tag;
+          showPage('home');
+          applyFilter();
+        });
+      });
+
+      // Like
+      updateLike(index);
+
+      // Comments
+      renderComments(index);
 
       showPage('article');
     }
 
-    // Article clicks
-    document.querySelectorAll('[data-article]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        showArticle(parseInt(el.dataset.article));
+    /* ═══════════════════════════════════════
+       LIKE SYSTEM (localStorage)
+       ═══════════════════════════════════════ */
+    function getLikes() {
+      return JSON.parse(localStorage.getItem('blog-likes') || '{}');
+    }
+
+    function updateLike(index) {
+      const likes = getLikes();
+      const count = likes[index] || 0;
+      const liked = localStorage.getItem('blog-liked-' + index) === '1';
+      const btn = document.getElementById('likeBtn');
+      const countEl = document.getElementById('likeCount');
+      btn.classList.toggle('liked', liked);
+      btn.querySelector('.heart').textContent = liked ? '♥' : '♡';
+      countEl.textContent = count;
+    }
+
+    document.getElementById('likeBtn').addEventListener('click', () => {
+      if (currentArticleIndex === null) return;
+      const likes = getLikes();
+      const likedKey = 'blog-liked-' + currentArticleIndex;
+      const alreadyLiked = localStorage.getItem(likedKey) === '1';
+
+      if (alreadyLiked) {
+        likes[currentArticleIndex] = Math.max(0, (likes[currentArticleIndex] || 0) - 1);
+        localStorage.removeItem(likedKey);
+      } else {
+        likes[currentArticleIndex] = (likes[currentArticleIndex] || 0) + 1;
+        localStorage.setItem(likedKey, '1');
+      }
+      localStorage.setItem('blog-likes', JSON.stringify(likes));
+      updateLike(currentArticleIndex);
+    });
+
+    /* ═══════════════════════════════════════
+       SHARE
+       ═══════════════════════════════════════ */
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (currentArticleIndex === null) return;
+        const a = articles[currentArticleIndex];
+        const url = window.location.href;
+        const text = `${a.title} — 墨迹博客`;
+
+        if (btn.dataset.share === 'copy') {
+          navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+        } else if (btn.dataset.share === 'twitter') {
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        } else if (btn.dataset.share === 'weibo') {
+          window.open(`https://service.weibo.com/share/share.php?title=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        }
       });
     });
 
-    // Back link
-    document.getElementById('backToList').addEventListener('click', (e) => {
-      e.preventDefault();
-      showPage('home');
+    /* ═══════════════════════════════════════
+       COMMENTS (localStorage)
+       ═══════════════════════════════════════ */
+    function getComments(articleIndex) {
+      const all = JSON.parse(localStorage.getItem('blog-comments') || '{}');
+      return all[articleIndex] || [];
+    }
+
+    function saveComments(articleIndex, comments) {
+      const all = JSON.parse(localStorage.getItem('blog-comments') || '{}');
+      all[articleIndex] = comments;
+      localStorage.setItem('blog-comments', JSON.stringify(all));
+    }
+
+    function renderComments(articleIndex) {
+      const comments = getComments(articleIndex);
+      const countEl = document.getElementById('commentsCount');
+      const listEl = document.getElementById('commentList');
+
+      countEl.textContent = comments.length > 0 ? `(${comments.length})` : '';
+
+      if (comments.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center;font-family:var(--font-detail);font-style:italic;color:var(--ink-muted);padding:1.5rem 0;">还没有留言，来做第一个吧</div>';
+        return;
+      }
+
+      listEl.innerHTML = comments.map((c, i) => {
+        const initial = c.name.charAt(0).toUpperCase();
+        return `<div class="comment-item">
+          <div class="comment-header">
+            <div class="comment-avatar">${initial}</div>
+            <span class="comment-author">${escapeHtml(c.name)}</span>
+            <span class="comment-date">${c.date}</span>
+            <button class="comment-delete" data-idx="${i}">删除</button>
+          </div>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
+        </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('.comment-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.idx);
+          comments.splice(idx, 1);
+          saveComments(articleIndex, comments);
+          renderComments(articleIndex);
+          showToast('留言已删除');
+        });
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    document.getElementById('commentSubmit').addEventListener('click', () => {
+      if (currentArticleIndex === null) return;
+      const nameInput = document.getElementById('commentName');
+      const textInput = document.getElementById('commentText');
+      const name = nameInput.value.trim();
+      const text = textInput.value.trim();
+
+      if (!name) { showToast('请输入你的名字'); nameInput.focus(); return; }
+      if (!text) { showToast('请输入留言内容'); textInput.focus(); return; }
+
+      const comments = getComments(currentArticleIndex);
+      comments.push({ name, text, date: timeAgo() });
+      saveComments(currentArticleIndex, comments);
+
+      nameInput.value = '';
+      textInput.value = '';
+      renderComments(currentArticleIndex);
+      showToast('留言成功 ✨');
     });
 
     /* ═══════════════════════════════════════
@@ -990,30 +1618,35 @@
       for (const [year, items] of Object.entries(years)) {
         html += `<h3 class="archive-year">${year}</h3>`;
         items.forEach(item => {
-          const shortDate = item.date.replace(/年/, '年').replace(/月/, '月');
-          html += `
-            <div class="archive-item">
-              <span class="archive-date">${shortDate}</span>
-              <a href="#" data-article="${item.index}">${item.title}</a>
-            </div>
-          `;
+          html += `<div class="archive-item">
+            <span class="archive-date">${item.date.replace(/年/, '年').replace(/月/, '月')}</span>
+            <a href="#" data-article="${item.index}">${item.title}</a>
+          </div>`;
         });
       }
       document.getElementById('archiveContent').innerHTML = html;
 
-      // Bind archive links
       document.querySelectorAll('#archiveContent [data-article]').forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          showArticle(parseInt(el.dataset.article));
-        });
+        el.addEventListener('click', (e) => { e.preventDefault(); showArticle(parseInt(el.dataset.article)); });
       });
     }
 
+    /* ═══════════════════════════════════════
+       INIT
+       ═══════════════════════════════════════ */
+    renderArticleList();
+    buildFilterBar();
     buildArchive();
-
-    // Show home by default
     pages.home.style.display = 'block';
+
+    // Restore saved name
+    const savedName = localStorage.getItem('blog-commenter-name');
+    if (savedName) document.getElementById('commentName').value = savedName;
+
+    // Save name on blur
+    document.getElementById('commentName').addEventListener('blur', (e) => {
+      if (e.target.value.trim()) localStorage.setItem('blog-commenter-name', e.target.value.trim());
+    });
   </script>
 </body>
 </html>
