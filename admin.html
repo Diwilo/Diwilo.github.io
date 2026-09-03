@@ -102,6 +102,7 @@
     .btn-success { color: var(--success); border-color: var(--success); }
     .btn-success:hover { background: var(--success); color: var(--paper); }
     .btn-sm { font-size: 0.75rem; padding: 0.35em 0.8em; }
+    .btn:focus-visible, .tab:focus-visible, .form-input:focus-visible, .form-select:focus-visible, .form-textarea:focus-visible, .login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
     /* Tabs */
     .tabs {
@@ -335,6 +336,9 @@
       .article-table th:nth-child(3), .article-table td:nth-child(3) { display: none; }
       .admin-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
 
     /* ═══ LOGIN SCREEN ═══ */
     .login-screen {
@@ -430,7 +434,7 @@
     <div class="login-box">
       <div class="login-lock">🔒</div>
       <div class="login-logo">墨迹<span class="dot">.</span></div>
-      <div class="login-sub">后台管理 · 请输入密码</div>
+      <div class="login-sub">机械工程博客后台 · 请输入密码</div>
       <input class="login-input" id="loginPassword" type="password" placeholder="· · · ·" maxlength="20" autocomplete="off">
       <button class="login-btn" id="loginBtn">进入</button>
       <div class="login-error" id="loginError">密码不正确</div>
@@ -440,7 +444,7 @@
   <div class="admin-wrapper hidden" id="adminWrapper">
 
     <header class="admin-header">
-      <h1>墨迹 <span>· 后台管理</span></h1>
+      <h1>墨迹 <span>· 机械工程博客后台</span></h1>
       <div class="header-actions">
         <a href="index.html" class="btn btn-sm">查看博客 →</a>
         <button class="btn btn-sm" id="themeToggle">☽</button>
@@ -456,7 +460,7 @@
     <!-- ARTICLES PANEL -->
     <div class="panel active" id="panel-articles">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-        <div style="font-family:var(--font-detail); color:var(--ink-muted); font-size:0.85rem;" id="articleCount"></div>
+        <div style="font-family:var(--font-detail); color:var(--ink-muted); font-size:0.85rem;" id="articleCount" aria-live="polite"></div>
         <button class="btn btn-primary" id="newArticleBtn">+ 写新文章</button>
       </div>
       <table class="article-table">
@@ -500,6 +504,8 @@
           <label class="form-label">正文（支持 HTML）</label>
           <textarea class="form-textarea" id="editorContent" placeholder="用 HTML 写作，例如：<p>段落</p><h2>小标题</h2><blockquote>引用</blockquote>"></textarea>
           <p class="form-hint">支持 HTML 标签：&lt;p&gt;、&lt;h2&gt;、&lt;blockquote&gt;、&lt;ul&gt;、&lt;li&gt; 等。首段会自动显示首字母下沉效果。</p>
+          <input type="file" id="imageFile" accept="image/*" hidden>
+          <button class="btn btn-sm" id="insertImageBtn" type="button">上传图片并插入正文</button>
         </div>
       </div>
       <div class="form-actions">
@@ -512,8 +518,29 @@
     <!-- SETTINGS PANEL -->
     <div class="panel" id="panel-settings">
       <div class="settings-section">
+        <h3>博客资料</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">博客名称</label>
+            <input class="form-input" id="settingSiteTitle" type="text" placeholder="墨迹">
+          </div>
+          <div class="form-group">
+            <label class="form-label">副标题</label>
+            <input class="form-input" id="settingSiteSubtitle" type="text" placeholder="机械工程 · 科研记录 · 日常札记">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">头像</label>
+            <input type="file" id="avatarFile" accept="image/*">
+            <p class="form-hint">建议使用正方形 JPG 或 PNG，文件会保存在浏览器本地。</p>
+          </div>
+        </div>
+        <div class="form-actions" style="justify-content:flex-start;">
+          <button class="btn btn-success" id="saveSiteProfile" type="button">保存博客资料</button>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>GitHub 部署</h3>
-        <div class="github-status" id="githubStatus">
+        <div class="github-status" id="githubStatus" aria-live="polite">
           状态：<strong>未配置</strong> — 配置后可一键同步到 GitHub Pages
         </div>
         <div class="form-grid">
@@ -524,7 +551,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">仓库名</label>
-            <input class="form-input" id="settingRepo" type="text" placeholder="Diwilo.github.io" value="Diwilo.github.io">
+            <input class="form-input" id="settingRepo" type="text" placeholder="Diwilo/Diwilo.github.io" value="Diwilo/Diwilo.github.io">
           </div>
         </div>
         <div class="form-actions" style="justify-content:flex-start;">
@@ -600,12 +627,29 @@
 
     function loadArticles() {
       const stored = localStorage.getItem('blog-articles');
-      if (stored) {
-        articles = JSON.parse(stored);
-      } else {
-        articles = JSON.parse(JSON.stringify(defaultArticles));
-        saveArticles();
-      }
+      try {
+        const parsed = stored ? JSON.parse(stored) : null;
+        articles = Array.isArray(parsed) ? parsed.filter(isValidArticle) : JSON.parse(JSON.stringify(defaultArticles));
+      } catch (e) { articles = JSON.parse(JSON.stringify(defaultArticles)); }
+      if (!articles.length) articles = JSON.parse(JSON.stringify(defaultArticles));
+      saveArticles();
+    }
+
+    function isValidArticle(article) {
+      return article && typeof article.title === 'string' && article.title.trim() &&
+        typeof article.category === 'string' && typeof article.content === 'string' && article.content.trim() &&
+        Array.isArray(article.tags);
+    }
+
+    function validateArticle(article, editingIndex) {
+      if (!article.title) return '请输入标题';
+      if (!article.category) return '请选择分类';
+      if (!article.content) return '请输入正文';
+      if (article.title.length > 80) return '标题不能超过 80 个字符';
+      if (article.content.length > 200000) return '正文不能超过 200000 个字符';
+      const duplicate = articles.some((a, i) => i !== editingIndex && a.title.trim() === article.title.trim());
+      if (duplicate) return '已有同名文章，请修改标题';
+      return '';
     }
 
     function saveArticles() {
@@ -656,6 +700,13 @@
       document.getElementById('confirmModal').classList.remove('open');
       if (confirmCallback) confirmCallback();
       confirmCallback = null;
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('confirmModal').classList.remove('open');
+        confirmCallback = null;
+      }
+      if (e.key === 'Enter' && document.activeElement === document.getElementById('loginPassword')) doLogin();
     });
 
     /* ═══════════════════════════════════════
@@ -775,10 +826,9 @@
       const tags = document.getElementById('editorTags').value.split(',').map(t => t.trim()).filter(Boolean);
       const content = document.getElementById('editorContent').value.trim();
 
-      if (!title) { showToast('请输入标题'); return; }
-      if (!content) { showToast('请输入正文'); return; }
-
       const article = { title, category, date: getDateStr(), tags, content };
+      const validationError = validateArticle(article, editingIndex);
+      if (validationError) { showToast(validationError); return; }
 
       if (editingIndex !== null) {
         article.date = articles[editingIndex].date; // Keep original date
@@ -802,20 +852,57 @@
       w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=EB+Garamond:wght@400;500;600&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet"><style>body{max-width:40rem;margin:3rem auto;padding:0 1.5rem;font-family:'Crimson Text','Noto Serif SC',serif;font-size:1.08rem;line-height:2;color:#444;}h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;margin-bottom:0.5rem;}p{margin-bottom:1.6em;text-indent:2em;}p:first-of-type{text-indent:0;}p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:3.6em;float:left;line-height:0.8;margin-right:0.08em;color:#8b3a3a;font-weight:700;}blockquote{border-left:2px solid #c8a84e;padding:0.8rem 1.2rem;margin:1.2rem 0;font-style:italic;color:#888;background:#faf6ee;}h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:600;margin:2rem 0 0.8rem;text-indent:0;}</style></head><body><h1>${title}</h1>${content}</body></html>`);
     });
 
+    function readSiteConfig() {
+      try { return JSON.parse(localStorage.getItem('blog-site-config') || '{}'); } catch (e) { return {}; }
+    }
+    function saveSiteConfig(config) { localStorage.setItem('blog-site-config', JSON.stringify(config)); }
+    function loadSiteProfile() {
+      const config = readSiteConfig();
+      document.getElementById('settingSiteTitle').value = config.title || '墨迹';
+      document.getElementById('settingSiteSubtitle').value = config.subtitle || '机械工程 · 科研记录 · 日常札记';
+    }
+    document.getElementById('saveSiteProfile').addEventListener('click', () => {
+      const config = readSiteConfig();
+      const title = document.getElementById('settingSiteTitle').value.trim();
+      const subtitle = document.getElementById('settingSiteSubtitle').value.trim();
+      if (!title) { showToast('请输入博客名称'); return; }
+      config.title = title; config.subtitle = subtitle || '机械工程 · 科研记录 · 日常札记';
+      saveSiteConfig(config); showToast('博客资料已保存');
+    });
+    function readImage(file, callback) {
+      if (!file || !file.type.startsWith('image/')) { showToast('请选择图片文件'); return; }
+      if (file.size > 2 * 1024 * 1024) { showToast('图片不能超过 2MB'); return; }
+      const reader = new FileReader(); reader.onload = () => callback(reader.result); reader.readAsDataURL(file);
+    }
+    document.getElementById('avatarFile').addEventListener('change', e => {
+      readImage(e.target.files[0], data => { const config = readSiteConfig(); config.avatar = data; saveSiteConfig(config); showToast('头像已保存'); });
+      e.target.value = '';
+    });
+    document.getElementById('insertImageBtn').addEventListener('click', () => document.getElementById('imageFile').click());
+    document.getElementById('imageFile').addEventListener('change', e => {
+      readImage(e.target.files[0], data => {
+        const textarea = document.getElementById('editorContent');
+        const tag = `<p><img src="${data}" alt="文章配图"></p>`;
+        const start = textarea.selectionStart; textarea.value = textarea.value.slice(0, start) + tag + textarea.value.slice(textarea.selectionEnd); textarea.focus(); textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+        showToast('图片已插入正文');
+      }); e.target.value = '';
+    });
+
     /* ═══════════════════════════════════════
        SETTINGS
        ═══════════════════════════════════════ */
     function loadSettings() {
       const token = localStorage.getItem('blog-github-token') || '';
-      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo/Diwilo.github.io';
       document.getElementById('settingToken').value = token;
       document.getElementById('settingRepo').value = repo;
       updateGithubStatus();
+      loadSiteProfile();
     }
 
     function updateGithubStatus() {
       const token = localStorage.getItem('blog-github-token');
-      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo/Diwilo.github.io';
       const el = document.getElementById('githubStatus');
       if (token) {
         el.innerHTML = `状态：<strong>已配置</strong> — 仓库：${repo} · Token：${token.slice(0,4)}…${token.slice(-4)}`;
@@ -826,10 +913,10 @@
 
     document.getElementById('saveSettings').addEventListener('click', () => {
       const token = document.getElementById('settingToken').value.trim();
-      const repo = document.getElementById('settingRepo').value.trim();
+      const repo = normalizeRepo(document.getElementById('settingRepo').value);
       if (token) localStorage.setItem('blog-github-token', token);
       else localStorage.removeItem('blog-github-token');
-      if (repo) localStorage.setItem('blog-github-repo', repo);
+      localStorage.setItem('blog-github-repo', repo);
       updateGithubStatus();
       showToast('设置已保存');
     });
@@ -837,11 +924,21 @@
     /* ═══════════════════════════════════════
        GITHUB SYNC
        ═══════════════════════════════════════ */
+    function normalizeRepo(value) {
+      const repo = (value || 'Diwilo/Diwilo.github.io').trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/^\/+|\/+$/g, '');
+      return repo.includes('/') ? repo : `Diwilo/${repo}`;
+    }
     async function getFileSHA(repo, path, token) {
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' }
       });
       if (res.status === 404) return null;
+      if (!res.ok) {
+        if (res.status === 401) throw new Error('Token 无效或已撤销，请重新创建 Token');
+        if (res.status === 403) throw new Error('Token 没有仓库内容读写权限');
+        if (res.status === 404) throw new Error('找不到仓库，请检查仓库名和权限');
+        throw new Error(`GitHub API ${res.status}`);
+      }
       const data = await res.json();
       return data.sha;
     }
@@ -862,7 +959,13 @@
         },
         body: JSON.stringify(body)
       });
-      return res.ok;
+      if (!res.ok) {
+        if (res.status === 401) throw new Error('Token 无效或已撤销，请重新创建 Token');
+        if (res.status === 403) throw new Error('Token 没有仓库内容写入权限');
+        if (res.status === 404) throw new Error('找不到仓库，请检查仓库名');
+        throw new Error(`GitHub API ${res.status}`);
+      }
+      return true;
     }
 
     function generateIndexHTML() {
@@ -883,16 +986,22 @@
           showToast('无法解析 index.html，请手动更新');
           return null;
         }
-        return html.substring(0, startIdx) + 'const articles = ' + articlesJSON + ';\n\n    ' + html.substring(endIdx + endMarker.length + 5);
+        const configJSON = JSON.stringify(readSiteConfig());
+        const updated = html.substring(0, startIdx) + 'const articles = ' + articlesJSON + ';\n\n    ' + html.substring(endIdx + endMarker.length + 5);
+        return updated.replace("const siteConfig = safeParse(localStorage.getItem('blog-site-config') || '{}', {});", 'const siteConfig = ' + configJSON + ';');
       });
     }
 
     document.getElementById('syncGithub').addEventListener('click', async () => {
       const token = localStorage.getItem('blog-github-token');
-      const repo = localStorage.getItem('blog-github-repo') || 'Diwilo.github.io';
+      const repo = normalizeRepo(localStorage.getItem('blog-github-repo'));
 
       if (!token) {
         showToast('请先配置 GitHub Token');
+        return;
+      }
+      if (location.protocol === 'file:') {
+        showToast('请通过 http://localhost 打开后台后再同步');
         return;
       }
 
@@ -914,7 +1023,10 @@
 
         showToast('同步成功 ✨ 一两分钟后生效');
       } catch (err) {
-        showToast('同步失败：' + err.message);
+        const message = err instanceof TypeError && err.message === 'Failed to fetch'
+          ? '网络或浏览器安全策略阻止了请求，请检查网络并使用 http://localhost 打开后台'
+          : '同步失败：' + err.message;
+        showToast(message);
       }
     });
 
@@ -945,8 +1057,10 @@
         try {
           const imported = JSON.parse(ev.target.result);
           if (!Array.isArray(imported)) throw new Error('格式错误');
-          showConfirm('导入文章', `将导入 ${imported.length} 篇文章，这会替换现有所有文章。继续吗？`, () => {
-            articles = imported;
+          const validImported = imported.filter(isValidArticle);
+          if (!validImported.length) throw new Error('没有有效文章');
+          showConfirm('导入文章', `将导入 ${validImported.length} 篇有效文章，这会替换现有所有文章。继续吗？`, () => {
+            articles = validImported;
             saveArticles();
             renderArticleTable();
             showToast(`已导入 ${imported.length} 篇文章`);
